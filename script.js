@@ -155,6 +155,26 @@ function addMessage(text, type) {
 }
 
 /* --- Video Logic --- */
+const videoModal = document.getElementById('videoModal');
+const trailerFrame = document.getElementById('trailerFrame');
+
 function playVideo() {
-    alert('Reproduciendo Trailer... (Imagina gritos horribles aquí)');
+    videoModal.classList.remove('hidden');
+    // Ensure video plays or is ready (autoplay is set to 0 in HTML but users might want to click play)
+    // Optional: Auto-play logic could go here if autoplay=1 was allowed and handled
+}
+
+function closeVideo() {
+    videoModal.classList.add('hidden');
+    // Stop video by resetting src (brute force but effective for iframes to stop audio)
+    const currentSrc = trailerFrame.src;
+    trailerFrame.src = '';
+    trailerFrame.src = currentSrc;
+}
+
+// Close video if clicking outside content
+videoModal.onclick = function (e) {
+    if (e.target === videoModal) {
+        closeVideo();
+    }
 }
