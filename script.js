@@ -123,15 +123,6 @@ function toggleChat() {
     chatWidget.classList.toggle('closed');
 }
 
-const botResponses = [
-    "Los espíritus te observan.",
-    "No mires atrás.",
-    "Las entradas se agotan... igual que tu tiempo.",
-    "Esa es una pregunta peligrosa.",
-    "El oráculo ve oscuridad en tu futuro.",
-    "Sí... o quizás no. La muerte es incierta."
-];
-
 function sendMessage() {
     const text = chatInput.value;
     if (!text) return;
@@ -139,17 +130,44 @@ function sendMessage() {
     addMessage(text, 'user');
     chatInput.value = '';
 
-    // Bot response delay
+    // Bot response
     setTimeout(() => {
-        const randomResp = botResponses[Math.floor(Math.random() * botResponses.length)];
-        addMessage(randomResp, 'bot');
-    }, 1000);
+        const response = getBotResponse(text);
+        addMessage(response, 'bot');
+    }, 500);
+}
+
+function getBotResponse(input) {
+    const lowerInput = input.toLowerCase();
+
+    // 1. Instrucciones de Compra (Priority over 'boleto' keyword)
+    if (lowerInput.includes('comprar') || lowerInput.includes('adquirir') || lowerInput.includes('pagar') || lowerInput.includes('instrucciones')) {
+        return "Para unirte a nosotros: <br> 1. Ve a la sección de 'Pase al Inframundo'. <br> 2. Elige tu destino (Mortal o Demonio). <br> 3. Añade al carrito y paga con tu alma.";
+    }
+
+    // 2. Precios / Boletos
+    if (lowerInput.includes('precio') || lowerInput.includes('boleto') || lowerInput.includes('costo') || lowerInput.includes('cuanto')) {
+        return "Las entradas tienen un precio de alma: <br> - Mortal (General): $6.66 <br> - Demonio (VIP): $13.13";
+    }
+
+    // 3. Servicios / Oferta
+    if (lowerInput.includes('servicio') || lowerInput.includes('ofrecen') || lowerInput.includes('que hay')) {
+        return "En este campus maldito encontrarás: <br> - Proyección de películas de terror <br> - Juego de Supervivencia <br> - Tienda de artículos oscuros <br> - Bebidas y snacks sangrientos";
+    }
+
+    // 4. Juego
+    if (lowerInput.includes('juego') || lowerInput.includes('jugar') || lowerInput.includes('trata')) {
+        return "El desafío 'Sobrevive': Tienes 15 segundos para cazar tantos espectros como puedas. Si tu puntuación es baja... tú serás el cazado.";
+    }
+
+    // 5. Default
+    return "Esa pregunta aún no está disponible en mis conocimientos sobrenaturales... Intenta preguntar por precios, juegos o servicios.";
 }
 
 function addMessage(text, type) {
     const div = document.createElement('div');
     div.classList.add('msg', type);
-    div.innerText = text;
+    div.innerHTML = text;
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
