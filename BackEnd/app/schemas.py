@@ -1,8 +1,8 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 
-# --- Token Schemas ---
+# --- Token ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -10,7 +10,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
-# --- User Schemas ---
+# --- User ---
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -24,42 +24,38 @@ class UserLogin(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    is_active: bool
+    role: str
     created_at: datetime
-
     class Config:
         orm_mode = True
 
-# --- Product Schemas ---
+# --- Product ---
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
+    type: str  # Antes 'category', ahora coincide con SQL
+    stock: int = 100
     image_url: Optional[str] = None
-    category: Optional[str] = None
-    is_available: bool = True
 
 class ProductCreate(ProductBase):
     pass
 
 class ProductResponse(ProductBase):
     id: int
-
     class Config:
         orm_mode = True
 
-# --- Game Score Schemas ---
-class GameScoreBase(BaseModel):
-    score: int
-    game_name: str
+# --- Game Score ---
+class ScoreBase(BaseModel):
+    points: int # Antes 'score', ahora 'points'
 
-class GameScoreCreate(GameScoreBase):
+class ScoreCreate(ScoreBase):
     pass
 
-class GameScoreResponse(GameScoreBase):
+class ScoreResponse(ScoreBase):
     id: int
     played_at: datetime
     user_id: int
-
     class Config:
         orm_mode = True
