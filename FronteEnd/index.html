@@ -101,24 +101,9 @@
             <h2 class="section-title">Tienda Maldita</h2>
             <div class="store-grid">
                 <!-- Products will be injected or static -->
-                <div class="product-card">
-                    <div class="product-icon">🎭</div>
-                    <h4>Máscara Macabra</h4>
-                    <p class="price">$20.00</p>
-                    <button class="btn-buy small" onclick="addToCart('Máscara Macabra', 20.00)">Añadir</button>
-                </div>
-                <div class="product-card">
-                    <div class="product-icon">🍷</div>
-                    <h4>Elixir de Vida</h4>
-                    <p class="price">$5.00</p>
-                    <button class="btn-buy small" onclick="addToCart('Elixir de Vida', 5.00)">Añadir</button>
-                </div>
-                <div class="product-card">
-                    <div class="product-icon">🦴</div>
-                    <h4>Hueso de Santo</h4>
-                    <p class="price">$15.00</p>
-                    <button class="btn-buy small" onclick="addToCart('Hueso de Santo', 15.00)">Añadir</button>
-                </div>
+                <!-- Los productos serán cargados dinámicamente desde el inframundo (API) -->
+                <p id="loadingStore" style="color: var(--spectral-green); text-align: center; width: 100%;">Invocando
+                    objetos malditos...</p>
             </div>
         </section>
 
@@ -154,7 +139,8 @@
         <div class="modal">
             <h2 id="modalTitle">Registro</h2>
             <input type="text" id="usernameInput" placeholder="Nombre de la víctima">
-            <button class="btn-blood" onclick="submitAuth()">Confirmar</button>
+            <input type="password" id="passwordInput" placeholder="Contraseña de ultratumba" style="margin-top: 10px;">
+            <button class="btn-blood" onclick="handleAuthSubmit()">Confirmar</button>
             <button class="btn-text" onclick="toggleModal()">Cancelar</button>
         </div>
     </div>
