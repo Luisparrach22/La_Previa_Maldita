@@ -27,6 +27,7 @@
             </div>
             <div class="auth-user hidden" id="authUser">
                 <span id="usernameSpan">Espectro Invitado</span>
+                <button class="btn-ghost small" onclick="toggleCart()">🛒 Ver Cesta</button>
                 <button class="btn-ghost small" onclick="logout()">Huir</button>
             </div>
         </div>
@@ -153,9 +154,17 @@
         <div class="modal">
             <h2 id="modalTitle">Registro</h2>
             <input type="text" id="usernameInput" placeholder="Nombre de la víctima">
-            <input type="password" placeholder="Contraseña secreta">
             <button class="btn-blood" onclick="submitAuth()">Confirmar</button>
             <button class="btn-text" onclick="toggleModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal-overlay hidden" style="z-index: 4000;">
+        <div class="modal notification-content">
+            <h2 id="notifTitle" class="creepy-font">Mensaje del Más Allá</h2>
+            <p id="notifMessage">...</p>
+            <button class="btn-blood small" onclick="closeNotification()">Entendido</button>
         </div>
     </div>
 

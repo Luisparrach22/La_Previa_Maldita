@@ -502,7 +502,28 @@ body {
     background: rgba(0, 0, 0, 0.95);
     border-left: 2px solid #333;
     padding: 20px;
-    z-index: 99;
+    z-index: 1500;
+    overflow-y: auto;
+}
+
+#cartList {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+#cartList li {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    color: var(--ghost-white);
+    display: flex;
+    justify-content: space-between;
+    transition: background 0.3s;
+}
+
+#cartList li:hover {
+    background: rgba(138, 0, 0, 0.2);
+    color: var(--bright-blood);
 }
 
 /* --- Modals --- */
@@ -567,7 +588,8 @@ body {
 
 .video-wrapper {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    padding-bottom: 56.25%;
+    /* 16:9 Aspect Ratio */
     height: 0;
     overflow: hidden;
     border: 2px solid var(--blood-red);
@@ -610,8 +632,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Responsive */
@@ -639,4 +666,22 @@ body {
     }
 
     /* Or hamburger menu */
+}
+
+/* --- Notification Modal --- */
+.notification-content {
+    border-color: var(--spectral-green);
+    box-shadow: 0 0 40px var(--spectral-green);
+}
+
+#notifTitle {
+    color: var(--spectral-green);
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+#notifMessage {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
 }

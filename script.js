@@ -6,6 +6,13 @@ const usernameSpan = document.getElementById('usernameSpan');
 const modalOverlay = document.getElementById('modalOverlay');
 const usernameInput = document.getElementById('usernameInput');
 
+/* --- Notification Logic --- */
+const notificationModal = document.getElementById('notificationModal');
+const notifTitle = document.getElementById('notifTitle');
+const notifMessage = document.getElementById('notifMessage');
+
+let currentUser = null;
+
 function toggleModal(type) {
     modalOverlay.classList.toggle('hidden');
     if (type) {
@@ -14,19 +21,41 @@ function toggleModal(type) {
     }
 }
 
+function showNotification(message, title = 'Mensaje del Más Allá', type = 'info') {
+    notifMessage.innerText = message;
+    notifTitle.innerText = title;
+
+    // Reset styles
+    notifTitle.style.color = 'var(--spectral-green)';
+    document.querySelector('.notification-content').style.borderColor = 'var(--spectral-green)';
+
+    if (type === 'error' || type === 'blood') {
+        notifTitle.style.color = 'var(--blood-red)';
+        document.querySelector('.notification-content').style.borderColor = 'var(--blood-red)';
+    }
+
+    notificationModal.classList.remove('hidden');
+}
+
+function closeNotification() {
+    notificationModal.classList.add('hidden');
+}
+
 function submitAuth() {
     const name = usernameInput.value || 'Alma Perdida';
+    currentUser = name;
     usernameSpan.innerText = name;
     authActions.classList.add('hidden');
     authUser.classList.remove('hidden');
     toggleModal();
-    alert(`Bienvenido, ${name}... esperamos que sobrevivas.`);
+    showNotification(`Bienvenido, ${name}... esperamos que sobrevivas.`, '¡Almas Unidas!', 'success');
 }
 
 function logout() {
+    currentUser = null;
     authActions.classList.remove('hidden');
     authUser.classList.add('hidden');
-    alert('Has escapado... por ahora.');
+    showNotification('Has escapado... por ahora.', 'Huida Exitosa', 'info');
 }
 
 /* --- Store & Cart Logic --- */
@@ -36,6 +65,11 @@ const cartList = document.getElementById('cartList');
 const cartTotalSpan = document.getElementById('cartTotal');
 
 function addToCart(item, price) {
+    if (!currentUser) {
+        showNotification('Debes iniciar sesión o registrarte para adquirir bienes del inframundo.', 'Acceso Denegado', 'error');
+        toggleModal('login');
+        return;
+    }
     cart.push({ item, price });
     updateCart();
     cartOverlay.classList.remove('hidden');
@@ -48,6 +82,8 @@ function updateCart() {
         total += product.price;
         const li = document.createElement('li');
         li.innerText = `${product.item} - $${product.price.toFixed(2)}`;
+        li.style.cursor = 'pointer';
+        li.title = 'Clic para eliminar';
         // Simple remove on click
         li.onclick = () => removeFromCart(index);
         cartList.appendChild(li);
@@ -66,9 +102,9 @@ function toggleCart() {
 
 function checkout() {
     if (cart.length === 0) {
-        alert('Tu cesta está vacía. El vacío es eterno.');
+        showNotification('Tu cesta está vacía. El vacío es eterno.', 'Vacío Infinito', 'error');
     } else {
-        alert('Compra realizada. Tu alma ha sido debitada.');
+        showNotification('Compra realizada. Tu alma ha sido debitada.', 'Pacto Sellado', 'blood');
         cart = [];
         updateCart();
         toggleCart();
@@ -111,7 +147,7 @@ function hitTarget() {
 function endGame() {
     clearInterval(gameInterval);
     target.classList.add('hidden');
-    alert(`Juego Terminado. Puntuación: ${score}. ¿Suficiente para salvarte?`);
+    showNotification(`Juego Terminado. Puntuación: ${score}. ¿Suficiente para salvarte?`, 'Fin del Juego', 'info');
 }
 
 /* --- Chat Bot Logic --- */
