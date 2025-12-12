@@ -62,6 +62,8 @@ Este proyecto es estático, por lo que no requiere instalación de dependencias 
 
 ```text
 La_Previa_Maldita/
+├── Images/         # Carpeta de imágenes
+├── Videos/         # Carpeta de videos
 ├── index.html      # Estructura principal y maquetación
 ├── styles.css      # Variables, animaciones y diseño responsive
 ├── script.js       # Lógica del juego, carrito, chat y modales
