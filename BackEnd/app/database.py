@@ -3,35 +3,28 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# 1. Cargar Variables de Entorno desde .env
-# Esto lee el archivo .env en la raíz del proyecto para obtener la URL
-load_dotenv() 
+# 1. Cargar Variables de Entorno
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
-# Obtener la URL de conexión que definiste en el .env
-# Formato: mysql+pymysql://usuario:password@host:port/nombre_base_datos
+# Obtener URL de conexión MySQL
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not SQLALCHEMY_DATABASE_URL:
-    raise ValueError("La variable de entorno 'DATABASE_URL' no está definida. Revisa tu archivo .env")
+    # Fallback sólo si no hay variable, pero esperamos que haya para MySQL
+    raise ValueError("DATABASE_URL no encontrada en .env")
 
-# 2. Configurar la conexión a la base de datos
-# El 'engine' es el punto de inicio para hablar con la base de datos.
+# 2. Configurar Engine (MySQL no necesita check_same_thread)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )
 
-# El 'SessionLocal' es la clase de sesión de base de datos. 
-# Cada instancia de SessionLocal será una sesión de base de datos.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# La clase Base se utiliza para crear los modelos de base de datos (ORM).
 Base = declarative_base()
 
-# 3. Dependencia para la Gestión de Sesiones (Middleware)
-# Esta función es un 'generator' que FastAPI usa como dependencia (Depends)
-# para inyectar una sesión de base de datos en tus rutas, asegurando que se 
-# cierre la conexión al finalizar la petición.
 def get_db():
     db = SessionLocal()
     try:

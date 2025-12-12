@@ -1,19 +1,22 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import crud, schemas, database, dependencies, models
+from .. import schemas, crud, database, dependencies
 
-router = APIRouter(prefix="/games", tags=["games"])
+router = APIRouter(
+    prefix="/games",
+    tags=["games"],
+)
 
-@router.post("/score", response_model=schemas.ScoreResponse)
+@router.post("/score", response_model=schemas.GameScoreResponse)
 def submit_score(
-    score: schemas.ScoreCreate, 
-    current_user: models.User = Depends(dependencies.get_current_user), # ¡Aquí usamos la dependencia!
-    db: Session = Depends(database.get_db)
+    score: schemas.GameScoreCreate, 
+    db: Session = Depends(database.get_db),
+    current_user = Depends(dependencies.get_current_user)
 ):
-    # Ahora 'current_user' tiene toda la info del usuario logueado
-    return crud.create_score(db=db, score=score, user_id=current_user.id)
+    # El usuario debe estar logueado para guardar su puntuación
+    return crud.create_game_score(db=db, score=score, user_id=current_user.id)
 
-@router.get("/leaderboard", response_model=List[schemas.ScoreResponse])
-def get_leaderboard(db: Session = Depends(database.get_db)):
-    return crud.get_top_scores(db=db)
+@router.get("/highscores/{game_name}", response_model=List[schemas.GameScoreResponse])
+def get_leaderboard(game_name: str, limit: int = 10, db: Session = Depends(database.get_db)):
+    return crud.get_high_scores(db=db, game_name=game_name, limit=limit)
