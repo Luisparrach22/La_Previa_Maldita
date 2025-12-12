@@ -3,7 +3,7 @@
 > **Come, bebe y grita.**
 > Una experiencia web inmersiva para la gestión de eventos de terror y gastronomía.
 
-![Estado del Proyecto](https://img.shields.io/badge/Estado-Finalizado-success)
+![Estado del Proyecto](https://img.shields.io/badge/Estado-Desarrollo-yellow)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
 ## 📖 Descripción
