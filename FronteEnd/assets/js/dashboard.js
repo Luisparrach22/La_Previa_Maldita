@@ -20,7 +20,8 @@ async function checkSession() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/users/me`, {
+        // Añadimos timestamp para evitar caché del navegador
+        const res = await fetch(`${API_URL}/users/me?t=${new Date().getTime()}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -49,7 +50,7 @@ function setupUserUI(user) {
 
 function logoutUser() {
     localStorage.removeItem('token');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 }
 
 function switchTab(tabId) {
@@ -216,10 +217,12 @@ window.onclick = function (event) {
 // ==========================================
 
 async function updateProfile() {
+    const newUsername = document.getElementById('editUsername').value;
     const newEmail = document.getElementById('editEmail').value;
     const newPass = document.getElementById('editPassword').value;
 
     const payload = {};
+    if (newUsername) payload.username = newUsername;
     if (newEmail) payload.email = newEmail;
     if (newPass) payload.password = newPass;
 
@@ -241,6 +244,15 @@ async function updateProfile() {
 
         if (res.ok) {
             alert("✅ Perfil actualizado correctamente.");
+
+            // 1. Actualización visual inmediata (Optimistic UI update)
+            if (newUsername) {
+                document.getElementById('userNameDisplay').textContent = newUsername;
+                document.getElementById('userInitials').textContent = newUsername.charAt(0).toUpperCase();
+            }
+
+            // 2. Recargar datos oficiales del servidor
+            checkSession();
         } else {
             const err = await res.json().catch(() => ({}));
             alert("❌ Error: " + (err.detail || "No se pudo actualizar"));

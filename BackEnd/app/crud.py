@@ -259,45 +259,86 @@ def get_orders_count(db: Session) -> int:
 
 def create_order(db: Session, order: schemas.OrderCreate, user_id: int) -> models.Order:
     """Crear nuevo pedido con sus items"""
+    import uuid
+    
+    # Generar número de orden único (e.g., ORD-12345678)
+    order_number = f"ORD-{str(uuid.uuid4()).upper()[:8]}"
+    
     # Crear el pedido
-    db_order = models.Order(user_id=user_id, total=0.0)
+    db_order = models.Order(
+        user_id=user_id, 
+        total=0.0,
+        order_number=order_number,
+        customer_email="user@email.com", # Placeholder, idealmente del usuario
+        status="confirmed", # Confirmado porque se paga con almas al instante
+        payment_status="paid"
+    )
+    # Intentar obtener email del usuario si es posible
+    user = get_user(db, user_id)
+    if user:
+        db_order.customer_email = user.email
+        db_order.customer_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
+        
     db.add(db_order)
-    db.flush()  # Para obtener el ID sin hacer commit
+    db.flush()
     
     total = 0.0
     
     # Crear los items del pedido
     for item in order.items:
-        # Verificar que el producto existe y tiene stock
         product = get_product(db, item.product_id)
         if not product:
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Producto con ID {item.product_id} no encontrado"
-            )
+            raise HTTPException(status_code=404, detail=f"Producto {item.product_id} no encontrado")
         
         if product.stock < item.quantity:
             db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Stock insuficiente para {product.name}. Disponible: {product.stock}"
+            raise HTTPException(status_code=400, detail=f"Stock insuficiente para {product.name}")
+            
+        # Determinar si necesitamos desglosar items (para tickets)
+        items_to_create = []
+        if product.type == "ticket":
+            # Crear un item por cada unidad para tener códigos únicos
+            for _ in range(item.quantity):
+                items_to_create.append({
+                    "quantity": 1,
+                    "is_ticket": True
+                })
+        else:
+            # Item normal
+            items_to_create.append({
+                "quantity": item.quantity,
+                "is_ticket": False
+            })
+            
+        for new_item_data in items_to_create:
+            qty = new_item_data["quantity"]
+            item_total = float(product.price) * qty
+            
+            # Generar código si es ticket
+            ticket_code = None
+            ticket_status = None
+            if new_item_data["is_ticket"]:
+                ticket_code = f"TKT-{str(uuid.uuid4()).upper()[:8]}"
+                ticket_status = "valid"
+            
+            db_item = models.OrderItem(
+                order_id=db_order.id,
+                product_id=product.id,
+                quantity=qty,
+                unit_price=product.price,
+                subtotal=item_total,
+                product_name=product.name,
+                product_type=product.type,
+                product_image_url=product.image_url,
+                ticket_code=ticket_code,
+                ticket_status=ticket_status
             )
-        
-        # Crear el item
-        item_total = product.price * item.quantity
-        db_item = models.OrderItem(
-            order_id=db_order.id,
-            product_id=item.product_id,
-            quantity=item.quantity,
-            unit_price=product.price
-        )
-        db.add(db_item)
-        
-        # Actualizar stock
+            db.add(db_item)
+            total += item_total
+
+        # Actualizar stock (una sola vez por el total de cantidad del producto original)
         product.stock -= item.quantity
-        
-        total += item_total
     
     # Actualizar total del pedido
     db_order.total = total

@@ -42,7 +42,18 @@ def submit_score(
     
     - **points**: Puntos obtenidos en el juego
     """
-    return crud.create_score(db=db, score=score, user_id=current_user.id)
+    # Guardar puntuación
+    new_score = crud.create_score(db=db, score=score, user_id=current_user.id)
+    
+    # ---------------------------------------------------------
+    # GAMIFICATION: Sumar puntos al saldo del usuario
+    # ---------------------------------------------------------
+    # Por simplicidad, 1 punto de score = 1 Alma
+    current_user.soul_balance += score.score_value
+    db.commit()
+    db.refresh(current_user)
+    
+    return new_score
 
 
 @router.get("/my-scores", response_model=List[schemas.ScoreResponse])

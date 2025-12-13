@@ -61,7 +61,7 @@ def login_for_access_token(form_data: schemas.UserLogin, db: Session = Depends(d
     
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -155,7 +155,7 @@ def google_auth(google_data: schemas.GoogleAuthRequest, db: Session = Depends(da
         # Generar nuestro JWT token
         access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = auth.create_access_token(
-            data={"sub": db_user.username}, expires_delta=access_token_expires
+            data={"sub": str(db_user.id)}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
         
@@ -214,8 +214,15 @@ def update_current_user(
                 detail="El nombre de usuario ya está en uso"
             )
     
-    updated_user = crud.update_user(db, current_user.id, user_update)
-    return updated_user
+    try:
+        updated_user = crud.update_user(db, current_user.id, user_update)
+        return updated_user
+    except Exception as e:
+        print(f"❌ Error actualizando usuario: {e}") # Log simple para debug
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno al actualizar perfil: {str(e)}"
+        )
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

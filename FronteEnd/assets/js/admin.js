@@ -72,7 +72,7 @@ function redirectToLogin(message = null) {
         alert(message);
     }
     localStorage.removeItem('token');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 }
 
 function setupAdminUI() {
@@ -83,7 +83,7 @@ function setupAdminUI() {
 
 function logoutAdmin() {
     localStorage.removeItem('token');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 }
 
 // ============================================================================

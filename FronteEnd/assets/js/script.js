@@ -121,9 +121,9 @@ function checkAuthSession(redirectAfterLogin = false) {
 // Función para redirigir según el rol del usuario
 function redirectToUserPage(user) {
     if (user.role === 'admin') {
-        window.location.href = 'admin.html';
+        window.location.href = 'pages/admin.html';
     } else {
-        window.location.href = 'user_page.html';
+        window.location.href = 'pages/user_page.html';
     }
 }
 
@@ -131,16 +131,38 @@ function updateUIForUser(user) {
     document.getElementById('authActions').classList.add('hidden');
     document.getElementById('authUser').classList.remove('hidden');
     document.getElementById('usernameSpan').textContent = user.username;
+
+    // Update Soul Balance
+    updateSoulBalance(user.soul_balance || 0);
+}
+
+function updateSoulBalance(amount) {
+    const el = document.getElementById('userSoulBalance');
+    if (el) {
+        el.textContent = amount;
+        // Animation effect
+        el.parentElement.classList.add('pulse-anim');
+        setTimeout(() => el.parentElement.classList.remove('pulse-anim'), 1000);
+    }
 }
 
 function toggleModal(mode = null) {
     const modal = document.getElementById('authModal');
     const title = document.getElementById('modalTitle');
+    const usernameInput = document.getElementById('usernameInput');
     const emailInput = document.getElementById('emailInput');
 
     if (mode) {
         currentAuthMode = mode;
         title.textContent = mode === 'login' ? 'Ingresar a la Pesadilla' : 'Unirse al Culto';
+
+        // Ocultar username en login
+        if (mode === 'login') {
+            usernameInput.style.display = 'none';
+        } else {
+            usernameInput.style.display = 'block';
+        }
+
         emailInput.style.display = 'block';
         emailInput.placeholder = mode === 'login' ? 'Email' : 'Email (para contactarte)';
 
@@ -185,14 +207,18 @@ async function handleAuthSubmit() {
         if (res.ok) {
             const data = await res.json();
             if (currentAuthMode === 'register') {
-                alert("✅ Cuenta creada exitosamente. Ahora puedes ingresar.");
-                currentAuthMode = 'login';
-                document.getElementById('modalTitle').textContent = 'Ingresar a la Pesadilla';
-                document.getElementById('usernameInput').value = '';
+                alert("✅ Cuenta creada exitosamente. Ahora puedes iniciar sesión.");
+
+                // Cambiar a modo login automáticamente
+                toggleModal('login');
+
+                // Pre-rellenar email para facilitar login
+                document.getElementById('emailInput').value = email;
+                document.getElementById('passwordInput').value = ''; // Limpiar password por seguridad
                 return;
             }
             localStorage.setItem('token', data.access_token);
-            toggleModal();
+            toggleModal(); // Cerrar modal
             // Redirigir automáticamente después del login
             checkAuthSession(true);
         } else {
@@ -297,8 +323,8 @@ function renderStore(products) {
             <div class="product-info">
                 <h3>${p.name}</h3>
                 <p style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">${p.description || 'Objeto misterioso'}</p>
-                <div class="product-price">$${p.price.toFixed(2)}</div>
-                <button class="add-to-cart-btn" onclick="addToCart('${p.name}', ${p.price}, ${p.id})">Añadir a la Cesta</button>
+                <div class="product-price">👻 ${Math.floor(p.price * 100)}</div>
+                <button class="add-to-cart-btn" onclick="addToCart('${p.name}', ${Math.floor(p.price * 100)}, ${p.id})">Obtener por ${Math.floor(p.price * 100)}</button>
             </div>
         `;
         grid.appendChild(card);
@@ -366,13 +392,13 @@ function renderCart() {
 
             li.innerHTML = `
                 <span>${item.name}</span>
-                <span>$${item.price.toFixed(2)} <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer; margin-left: 5px;">✕</button></span>
+                <span>👻 ${item.price} <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer; margin-left: 5px;">✕</button></span>
             `;
             list.appendChild(li);
         });
     }
 
-    totalEl.textContent = total.toFixed(2);
+    totalEl.textContent = total;
 }
 
 function removeFromCart(index) {
@@ -394,12 +420,50 @@ async function checkout() {
         return;
     }
 
-    // Simulación de checkout
-    alert("¡Trato cerrado! Tu alma ha sido procesada.\n\n(En modo demo esto no se guarda en base de datos)");
-    cart = [];
-    updateCartIcon();
-    renderCart();
-    toggleCart();
+    // Simulación de checkout con nueva lógica de backend
+    const token = localStorage.getItem('token');
+
+    // Preparar payload
+    const items = cart.map(item => ({
+        product_id: item.id || 1, // Fallback ID si es mock
+        quantity: 1
+    }));
+
+    // Agrupar items iguales (opcional)
+
+    fetch(`${API_URL}/orders/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ items })
+    })
+        .then(async res => {
+            if (res.ok) {
+                alert("¡Pacto Sellado! Tus almas han sido cobradas.");
+                cart = [];
+
+                // Actualizar saldo
+                // Recargamos el usuario para obtener el saldo actualizado del servidor
+                checkAuthSession();
+
+                updateCartIcon();
+                renderCart();
+                toggleCart();
+            } else {
+                const err = await res.json();
+                if (res.status === 402) {
+                    alert(`⚠️ ${err.detail}\n\n¡Ve a la sección de JUEGOS para ganar más almas!`);
+                } else {
+                    alert("Error en el ritual: " + (err.detail || "Intenta de nuevo"));
+                }
+            }
+        })
+        .catch(e => {
+            alert("Error de conexión con el inframundo.");
+            console.error(e);
+        });
 }
 
 // ==========================================
@@ -461,10 +525,32 @@ function endGame() {
     document.getElementById('target').classList.add('hidden');
     clearTimeout(gameTimer);
 
-    alert(`¡Tiempo! Puntuación final: ${gameScore}`);
+    alert(`¡Sobreviviste! Has cosechado ${gameScore} Almas.`);
 
     if (currentUser) {
-        // Guardar score...
+        // Enviar Puntuación y Ganar Almas
+        fetch(`${API_URL}/games/score`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+                game_type: 'whack_a_ghost',
+                score_value: gameScore
+            })
+        })
+            .then(res => {
+                if (res.ok) {
+                    // Actualizar saldo localmente
+                    currentUser.soul_balance = (currentUser.soul_balance || 0) + gameScore;
+                    updateSoulBalance(currentUser.soul_balance);
+                    showNotification(`+${gameScore} Almas añadidas a tu cuenta`);
+                }
+            })
+            .catch(err => console.error("Error guardando score", err));
+    } else {
+        alert("¡Inicia sesión para guardar tus Almas!");
     }
 }
 

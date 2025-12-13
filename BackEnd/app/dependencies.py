@@ -28,16 +28,22 @@ def get_current_user(
     
     try:
         payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        user_identifier: str = payload.get("sub")
+        if user_identifier is None:
             raise credentials_exception
-        token_data = schemas.TokenData(username=username)
+        # No usamos TokenData schema estricto aquí para permitir flexibilidad
     except JWTError:
         raise credentials_exception
     
-    user = db.query(models.User).filter(
-        models.User.username == token_data.username
-    ).first()
+    user = None
+    
+    # 1. Intentar buscar por ID (si es numérico) - Estrategia robusta
+    if user_identifier.isdigit():
+        user = db.query(models.User).filter(models.User.id == int(user_identifier)).first()
+        
+    # 2. Si no se encontró o no es ID, buscar por username (compatibilidad tokens antiguos)
+    if not user:
+        user = db.query(models.User).filter(models.User.username == user_identifier).first()
     
     if user is None:
         raise credentials_exception

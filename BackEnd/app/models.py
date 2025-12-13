@@ -100,6 +100,9 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     verification_token = Column(String(255), nullable=True)
     
+    # Economía (Gamificación)
+    soul_balance = Column(Integer, default=0)
+    
     # Preferencias
     receive_notifications = Column(Boolean, default=True)
     receive_marketing = Column(Boolean, default=False)

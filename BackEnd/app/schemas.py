@@ -115,7 +115,11 @@ class UserUpdate(BaseModel):
     # Solo admin puede cambiar
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
+    # Solo admin puede cambiar
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
+    soul_balance: Optional[int] = None
 
 class UserCreateAdmin(UserCreate):
     """Schema para creación de usuario por administrador"""
@@ -138,7 +142,10 @@ class UserResponse(BaseModel):
     role: str
     auth_provider: str = "email"
     is_active: bool = True
+    auth_provider: str = "email"
+    is_active: bool = True
     is_verified: bool = False
+    soul_balance: int = 0
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -35,11 +35,26 @@ def create_order(
     }
     ```
     """
-    if not order.items:
+    # -------------------------------------------------------------
+    # ECONOMÍA DE ALMAS: Validar y descontar saldo
+    # -------------------------------------------------------------
+    # Calcular el costo total antes de procesar
+    total_cost = 0.0
+    for item in order.items:
+        prod = crud.get_product(db, item.product_id)
+        if not prod:
+             raise HTTPException(status_code=404, detail=f"Producto {item.product_id} no encontrado")
+        total_cost += float(prod.price) * item.quantity
+    
+    # Verificar saldo
+    if current_user.soul_balance < total_cost:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El pedido debe contener al menos un item"
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail=f"¡Tu alma es débil! Necesitas {total_cost} almas, pero solo tienes {current_user.soul_balance}. Juega más para ganar almas."
         )
+    
+    # Descontar saldo (El commit se hace dentro de crud.create_order)
+    current_user.soul_balance -= int(total_cost)
     
     return crud.create_order(db=db, order=order, user_id=current_user.id)
 
