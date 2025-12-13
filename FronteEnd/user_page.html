@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santuario Personal | La Previa Maldita</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="shortcut icon" href="/Images/image-preview-ico.ico" type="image/x-icon">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Outfit:wght@300;400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- SIDEBAR -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="avatar-circle">
+                    <span id="userInitials">?</span>
+                </div>
+                <div class="user-name" id="userNameDisplay">Cargando...</div>
+                <div class="user-role">Alma Condenada</div>
+            </div>
+
+            <ul class="dashboard-menu">
+                <li class="active" onclick="switchTab('tickets')">
+                    <span>🎟️</span> <span class="side-text">Mis Tickets</span>
+                </li>
+                <li onclick="switchTab('orders')">
+                    <span>📦</span> <span class="side-text">Pedidos</span>
+                </li>
+                <li onclick="switchTab('scores')">
+                    <span>🏆</span> <span class="side-text">Logros</span>
+                </li>
+                <li onclick="switchTab('settings')">
+                    <span>⚙️</span> <span class="side-text">Ajustes</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <a href="index.html" class="btn-sidebar">← Regresar al Evento</a>
+                <button class="btn-sidebar btn-logout" onclick="logoutUser()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-content">
+
+            <!-- TICKETS -->
+            <section id="tab-tickets" class="dashboard-tab active">
+                <h1 class="tab-title">Billetera de Almas</h1>
+                <p class="tab-subtitle">Tus llaves hacia la oscuridad</p>
+
+                <div class="wallet-grid" id="ticketsList">
+                    <!-- Loading placeholder -->
+                    <div style="color: #666;">Buscando pactos firmados...</div>
+                </div>
+            </section>
+
+            <!-- ORDERS -->
+            <section id="tab-orders" class="dashboard-tab">
+                <h1 class="tab-title">Registro de Adquisiciones</h1>
+                <p class="tab-subtitle">Objetos invocados desde la tienda</p>
+
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Objetos</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList">
+                        <!-- Example Row -->
+                        <tr>
+                            <td>#666-A</td>
+                            <td>Ticket Demonio, Poción de Sangre</td>
+                            <td>$21.63</td>
+                            <td><span class="status-badge completed">Completado</span></td>
+                            <td>31/10/2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- SCORES -->
+            <section id="tab-scores" class="dashboard-tab">
+                <h1 class="tab-title">Salón de la Fama</h1>
+                <p class="tab-subtitle">Tus estadísticas de supervivencia</p>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <h4>Puntuación Máxima</h4>
+                        <div class="number" id="bestScore">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Rango Actual</h4>
+                        <div class="rank-text">Espectro</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section id="tab-settings" class="dashboard-tab">
+                <h1 class="tab-title">Configuración del Alma</h1>
+                <p class="tab-subtitle">Modificar datos del contrato</p>
+
+                <div class="settings-panel">
+                    <div class="input-group">
+                        <label>Nombre en el registro</label>
+                        <input type="text" id="editUsername" class="fancy-input" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Canal de contacto (Email)</label>
+                        <input type="email" id="editEmail" class="fancy-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Nueva clave de acceso</label>
+                        <input type="password" id="editPassword" class="fancy-input" placeholder="••••••••">
+                    </div>
+
+                    <button class="btn-gold" onclick="updateProfile()">Sellar Cambios</button>
+
+                    <div style="margin-top: 50px; border-top: 1px solid #333; padding-top: 20px;">
+                        <button onclick="deleteAccount()"
+                            style="background:none; border:none; color: #500; cursor:pointer;">⚠ Solicitar borrado de
+                            existencia</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- TICKET MODAL -->
+    <div id="ticketModal" class="dashboard-modal hidden">
+        <div class="modal-content ticket-modal-content">
+            <span class="close-modal" onclick="closeTicketModal()">×</span>
+            <div class="modal-ticket-view" id="modalTicketContainer">
+                <h2 id="modalTicketTitle" class="glitch-text-sm">TICKET SELECCIONADO</h2>
+                <div class="qr-big">
+                    <img id="modalTicketQR" src="" alt="QR Code">
+                </div>
+                <div class="ticket-info-row">
+                    <span>ID:</span> <span id="modalTicketID" class="gold-text">...</span>
+                </div>
+                <div class="ticket-info-row">
+                    <span>Estado:</span> <span id="modalTicketStatus" class="status-badge completed">ACTIVO</span>
+                </div>
+                <p class="ticket-instruction">Presenta este código en la entrada. No lo compartas con mortales.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

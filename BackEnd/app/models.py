@@ -10,11 +10,23 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    
+    # Información de cuenta
     username = Column(String(50), unique=True, index=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    
+    # Información personal
+    first_name = Column(String(50), nullable=True)  # Nombre
+    last_name = Column(String(50), nullable=True)   # Apellido
+    phone = Column(String(20), nullable=True)       # Teléfono
+    avatar_url = Column(String(500), nullable=True) # Foto de perfil
+    
+    # Metadatos
     role = Column(String(20), default="user")  # 'user' o 'admin'
+    auth_provider = Column(String(20), default="email")  # 'email' o 'google'
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relaciones
     scores = relationship("Score", back_populates="player", cascade="all, delete-orphan")

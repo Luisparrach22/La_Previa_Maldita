@@ -30,21 +30,32 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
+class GoogleAuthRequest(BaseModel):
+    """Schema para recibir el token de Google OAuth"""
+    token: str
+
 # ============================================================================
 # USER SCHEMAS
 # ============================================================================
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
+    phone: Optional[str] = None
 
 class UserUpdate(BaseModel):
     """Esquema para actualización parcial de usuario"""
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
     role: Optional[UserRole] = None
 
 class UserLogin(BaseModel):
@@ -53,8 +64,12 @@ class UserLogin(BaseModel):
 
 class UserResponse(UserBase):
     id: int
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
     role: str
+    auth_provider: str = "email"
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

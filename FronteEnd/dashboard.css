@@ -1,0 +1,515 @@
+/* =========================================
+   DASHBOARD CONCEPT: THE GILDED CRYPT
+   ========================================= */
+
+:root {
+    --dash-bg: #050505;
+    --dash-sidebar: #0a0a0a;
+    --dash-gold: #d4af37;
+    /* Oro viejo */
+    --dash-gold-dim: #8a7020;
+    --dash-purple: #4b0082;
+    /* Púrpura profundo para acentos mágicos */
+    --dash-text: #e0e0e0;
+    --dash-text-muted: #888;
+    --dash-border: 1px solid rgba(212, 175, 55, 0.2);
+    --dash-card-bg: rgba(20, 20, 20, 0.95);
+}
+
+/* Reset específico para el dashboard para evitar conflictos */
+body {
+    background: var(--dash-bg);
+    overflow-x: hidden;
+}
+
+/* --- Layout Principal --- */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+}
+
+/* --- Sidebar (El Monolito) --- */
+.dashboard-sidebar {
+    background: var(--dash-sidebar);
+    border-right: 1px solid rgba(212, 175, 55, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: relative;
+    /* Patrón de textura sutil */
+    background-image: repeating-linear-gradient(45deg,
+            rgba(0, 0, 0, 0.2) 0px,
+            rgba(0, 0, 0, 0.2) 2px,
+            transparent 2px,
+            transparent 4px);
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+/* User Profile Header en Sidebar */
+.sidebar-header {
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--dash-gold-dim);
+    background: linear-gradient(to bottom, #111, #0a0a0a);
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px;
+    background: #000;
+    border: 2px solid var(--dash-gold);
+    color: var(--dash-gold);
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+.user-name {
+    font-family: 'Outfit', sans-serif;
+    color: var(--dash-gold);
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.user-role {
+    color: var(--dash-text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+
+/* Navegación */
+.dashboard-menu {
+    list-style: none;
+    padding: 20px 0;
+    flex: 1;
+}
+
+.dashboard-menu li {
+    padding: 18px 30px;
+    cursor: pointer;
+    color: var(--dash-text-muted);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dashboard-menu li:hover {
+    color: var(--dash-gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.dashboard-menu li.active {
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), transparent);
+    color: var(--dash-gold);
+    border-left: 3px solid var(--dash-gold);
+    font-weight: bold;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Botón Volver y Logout */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-sidebar {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid #333;
+    color: #666;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+
+.btn-sidebar:hover {
+    border-color: var(--dash-gold-dim);
+    color: var(--dash-text);
+}
+
+.btn-logout {
+    color: #a00000;
+    border-color: #300000;
+}
+
+.btn-logout:hover {
+    background: #300000;
+    color: #ff0000;
+}
+
+
+/* --- Main Content Area --- */
+.dashboard-content {
+    padding: 60px 80px;
+    background: radial-gradient(circle at top right, #1a1a1a 0%, #000000 70%);
+    overflow-y: auto;
+}
+
+/* Tabs Animation */
+.dashboard-tab {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.dashboard-tab.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Headers de Sección */
+.tab-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    color: #fff;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.tab-subtitle {
+    color: var(--dash-gold);
+    font-family: 'Nosifer', cursive;
+    font-size: 1rem;
+    margin-bottom: 50px;
+    opacity: 0.8;
+}
+
+/* --- Cards (Tickets) --- */
+.wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.ticket-card-pro {
+    background: #000;
+    border: 1px solid var(--dash-gold-dim);
+    position: relative;
+    overflow: hidden;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+.ticket-card-pro:hover {
+    transform: scale(1.02) rotate(1deg);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+    border-color: var(--dash-gold);
+}
+
+.ticket-card-pro::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--dash-gold);
+}
+
+.ticket-content {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.ticket-type {
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--dash-text-muted);
+    font-size: 0.8rem;
+}
+
+.ticket-event {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 5px 0 20px;
+}
+
+.qr-placeholder {
+    background: #fff;
+    padding: 20px;
+    align-self: center;
+    border: 4px solid var(--dash-gold);
+}
+
+.ticket-id {
+    font-family: monospace;
+    text-align: center;
+    color: var(--dash-gold);
+    margin-top: 10px;
+}
+
+/* --- Stats (Scores) --- */
+.stats-container {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    min-width: 200px;
+    position: relative;
+}
+
+.stat-box h4 {
+    color: var(--dash-text-muted);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.stat-box .number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--dash-gold);
+    line-height: 1;
+}
+
+.stat-box .rank-text {
+    font-size: 1.5rem;
+    color: var(--dash-purple);
+    font-family: 'Creepster', cursive;
+}
+
+/* --- Tables (Orders) --- */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ccc;
+    font-size: 0.95rem;
+}
+
+.orders-table th {
+    text-align: left;
+    padding: 15px;
+    border-bottom: 2px solid #333;
+    color: var(--dash-gold);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.orders-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.orders-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background: #222;
+    color: #fff;
+}
+
+.status-badge.completed {
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+}
+
+.status-badge.pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: orange;
+}
+
+/* --- Forms (Settings) --- */
+.settings-panel {
+    max-width: 600px;
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    color: var(--dash-gold);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.fancy-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #333;
+    padding: 10px 0;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    transition: 0.3s;
+}
+
+.fancy-input:focus {
+    outline: none;
+    border-bottom-color: var(--dash-gold);
+}
+
+.btn-gold {
+    background: var(--dash-gold);
+    color: #000;
+    border: none;
+    padding: 15px 40px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.3s;
+}
+
+.btn-gold:hover {
+    background: #fff;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+/* --- Modals for Dashboard --- */
+.dashboard-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.dashboard-modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #111;
+    border: 2px solid var(--dash-gold);
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+    animation: zoomIn 0.3s ease;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #666;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-modal:hover {
+    color: #fff;
+}
+
+.modal-ticket-view {
+    text-align: center;
+}
+
+.glitch-text-sm {
+    font-family: 'Creepster', cursive;
+    color: var(--dash-purple);
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 var(--dash-gold);
+}
+
+.qr-big {
+    background: #fff;
+    padding: 20px;
+    display: inline-block;
+    border: 5px solid var(--dash-gold);
+    margin-bottom: 30px;
+}
+
+.qr-big img {
+    width: 200px;
+    height: 200px;
+    image-rendering: pixelated;
+    /* Para QRs nítidos */
+}
+
+.ticket-info-row {
+    font-size: 1.2rem;
+    margin: 10px 0;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #333;
+    padding-bottom: 5px;
+}
+
+.gold-text {
+    color: var(--dash-gold);
+    font-family: monospace;
+}
+
+.ticket-instruction {
+    margin-top: 30px;
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+    .dashboard-container {
+        grid-template-columns: 80px 1fr;
+    }
+
+    .user-name,
+    .user-role,
+    .sidebar-footer,
+    .side-text {
+        display: none;
+    }
+
+    .dashboard-content {
+        padding: 30px;
+    }
+}

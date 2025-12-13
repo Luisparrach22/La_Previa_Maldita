@@ -1,361 +1,540 @@
-/* --- Configuration --- */
-const API_URL = "http://localhost:8000";
-
-/* --- Auth Logic --- */
-const authBar = document.getElementById('authBar');
-const authActions = document.getElementById('authActions');
-const authUser = document.getElementById('authUser');
-const usernameSpan = document.getElementById('usernameSpan');
-const modalOverlay = document.getElementById('modalOverlay');
-const usernameInput = document.getElementById('usernameInput');
-const passwordInput = document.getElementById('passwordInput'); // New field
-
-/* --- Notification Logic --- */
-const notificationModal = document.getElementById('notificationModal');
-const notifTitle = document.getElementById('notifTitle');
-const notifMessage = document.getElementById('notifMessage');
-
-let currentUser = null; // Will hold user object or name
-let currentToken = localStorage.getItem('access_token');
+// ==========================================
+// CONFIGURACIÓN Y ESTADO GLOBAL
+// ==========================================
+const API_URL = "http://localhost:8000"; // Asegúrate de que tu backend corre aquí
+let currentUser = null;
+let cart = [];
+let gameScore = 0;
+let gameActive = false;
+let gameTimer;
 let currentAuthMode = 'login'; // 'login' or 'register'
 
-// Initialize
+// ==========================================
+// INICIALIZACIÓN
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    if (currentToken) {
-        verifyToken();
-    }
-    loadProducts();
+    checkAuthSession();
+    fetchProducts();
+    initCountdown();
+    setupScrollEffects();
 });
 
-async function verifyToken() {
-    try {
-        const response = await fetch(`${API_URL}/users/me`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        if (response.ok) {
-            const user = await response.json();
-            loginSuccess(user);
+function setupScrollEffects() {
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('mainNav');
+        if (window.scrollY > 50) {
+            nav.classList.add('scrolled');
         } else {
-            logout(); // Token expired or invalid
+            nav.classList.remove('scrolled');
         }
-    } catch (error) {
-        console.error("Error verifying token", error);
-        logout();
+    });
+
+    // Mobile Menu Toggle
+    window.toggleMobileNav = () => {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('active');
+    };
+}
+
+// ==========================================
+// CUENTA REGRESIVA
+// ==========================================
+function initCountdown() {
+    // Fecha objetivo: 31 de Octubre del próximo octubre disponible
+    const currentYear = new Date().getFullYear();
+    const targetDate = new Date(`October 31, ${currentYear} 00:00:00`).getTime();
+
+    // Si ya pasó Halloween este año (estamos en Nov/Dic), apuntar al próximo
+    const now = new Date().getTime();
+    const finalTargetDate = targetDate < now ? new Date(`October 31, ${currentYear + 1} 00:00:00`).getTime() : targetDate;
+
+    setInterval(() => {
+        const now = new Date().getTime();
+        const distance = finalTargetDate - now;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("days").innerText = days.toString().padStart(2, '0');
+        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+        document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+        document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+    }, 1000);
+}
+
+// ==========================================
+// AUTENTICACIÓN
+// ==========================================
+function checkAuthSession() {
+    const token = localStorage.getItem('token');
+
+    // Validar usuario demo primero (para pruebas visuales)
+    const demoUser = localStorage.getItem('demoUser');
+    if (demoUser && token) {
+        currentUser = JSON.parse(demoUser);
+        updateUIForUser(currentUser);
+        return;
+    }
+
+    if (token) {
+        // Validar token con el backend (endpoint /users/me)
+        fetch(`${API_URL}/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error('Sesión expirada');
+            })
+            .then(user => {
+                currentUser = user;
+                updateUIForUser(user);
+            })
+            .catch(() => {
+                // Si falla la conexión pero hay token, puede ser modo demo fallido o server caído.
+                // Por seguridad, logout si era sesión real.
+                logout();
+            });
     }
 }
 
-function toggleModal(type) {
-    modalOverlay.classList.toggle('hidden');
-    if (type) {
-        currentAuthMode = type;
-        document.getElementById('modalTitle').innerText =
-            type === 'login' ? 'Entrar al Más Allá' : 'Únete a la Horda';
-        usernameInput.value = '';
-        passwordInput.value = '';
-    }
+function updateUIForUser(user) {
+    document.getElementById('authActions').classList.add('hidden');
+    document.getElementById('authUser').classList.remove('hidden');
+    document.getElementById('usernameSpan').textContent = user.username;
 }
 
-function showNotification(message, title = 'Mensaje del Más Allá', type = 'info') {
-    notifMessage.innerText = message;
-    notifTitle.innerText = title;
-    notifTitle.style.color = 'var(--spectral-green)';
-    document.querySelector('.notification-content').style.borderColor = 'var(--spectral-green)';
+function toggleModal(mode = null) {
+    const modal = document.getElementById('authModal');
+    const title = document.getElementById('modalTitle');
+    const emailInput = document.getElementById('emailInput');
 
-    if (type === 'error' || type === 'blood') {
-        notifTitle.style.color = 'var(--blood-red)';
-        document.querySelector('.notification-content').style.borderColor = 'var(--blood-red)';
+    if (mode) {
+        currentAuthMode = mode;
+        title.textContent = mode === 'login' ? 'Ingresar a la Pesadilla' : 'Unirse al Culto';
+        emailInput.style.display = 'block';
+        emailInput.placeholder = mode === 'login' ? 'Email' : 'Email (para contactarte)';
+
+        document.getElementById('authError').style.display = 'none';
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
     }
-    notificationModal.classList.remove('hidden');
-}
-
-function closeNotification() {
-    notificationModal.classList.add('hidden');
 }
 
 async function handleAuthSubmit() {
-    // Validar entradas
-    let userVal = usernameInput.value;
-    const password = passwordInput.value;
+    const username = document.getElementById('usernameInput').value;
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    const errorMsg = document.getElementById('authError');
 
-    if (!userVal || !password) {
-        showNotification("Debes ofrecer un nombre y una clave...", "Datos Faltantes", "error");
+    if (!email || !password || (currentAuthMode === 'register' && !username)) {
+        errorMsg.textContent = "Todos los campos son obligatorios... para tu supervivencia.";
+        errorMsg.style.display = 'block';
         return;
     }
 
-    // Auto-generar email si el usuario solo pone nombre (para simplificar UX)
-    let email = userVal.includes('@') ? userVal : `${userVal}@inframundo.com`;
-
     try {
-        let response;
+        let endpoint = currentAuthMode === 'login' ? '/users/login' : '/users/register';
+        let bodyData = {};
+
         if (currentAuthMode === 'register') {
-            response = await fetch(`${API_URL}/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: userVal,
-                    email: email,
-                    password: password
-                })
-            });
+            bodyData = { username, email, password };
         } else {
-            // Login expects email in UserLogin schema
-            response = await fetch(`${API_URL}/users/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
+            bodyData = { email, password };
         }
 
-        if (response.ok) {
-            const data = await response.json();
-            if (currentAuthMode === 'login') {
-                localStorage.setItem('access_token', data.access_token);
-                currentToken = data.access_token;
-                verifyToken();
-                toggleModal();
-                showNotification("Has regresado de las sombras...", "Login Exitoso", "success");
+        // INTENTO DE LOGIN REAL O MODO DEMO
+        try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (currentAuthMode === 'register') {
+                    alert("Cuenta creada. Ahora ingresa...");
+                    currentAuthMode = 'login';
+                    document.getElementById('modalTitle').textContent = 'Ingresar';
+                    return;
+                }
+                localStorage.setItem('token', data.access_token);
+                // Limpiar demo user si existe
+                localStorage.removeItem('demoUser');
             } else {
-                // After register, auto-login or ask to login
-                toggleModal();
-                showNotification("Tu alma ha sido registrada. Ahora, inicia sesión.", "Registro Exitoso", "success");
+                if (res.status === 401) throw new Error("Credenciales inválidas");
+                throw new Error("Error en servidor");
             }
-        } else {
-            const err = await response.json();
-            showNotification(err.detail || "Algo salió mal en el ritual.", "Error", "error");
-        }
-    } catch (e) {
-        showNotification("No se pudo contactar con el servidor.", "Error de Conexión", "error");
-    }
-}
 
-function loginSuccess(user) {
-    currentUser = user;
-    usernameSpan.innerText = user.username;
-    authActions.classList.add('hidden');
-    authUser.classList.remove('hidden');
+        } catch (networkError) {
+            console.warn("Backend no disponible. Activando Modo Demo. Error:", networkError);
+
+            // ACTIVAR MODO DEMO
+            const mockToken = "demo_token_" + Date.now();
+            localStorage.setItem('token', mockToken);
+
+            const mockUser = {
+                username: username || email.split('@')[0] || "Viajero_Oscuro",
+                email: email || "demo@lapreviamaldita.com"
+            };
+            localStorage.setItem('demoUser', JSON.stringify(mockUser));
+
+            alert("⚠️ MODO DEMO ACTIVADO ⚠️\n(No se detectó el servidor, pero puedes probar la interfaz)");
+        }
+
+        checkAuthSession();
+        toggleModal(); // Cerrar modal
+
+    } catch (err) {
+        errorMsg.textContent = err.message || "Error desconocido";
+        errorMsg.style.display = 'block';
+    }
 }
 
 function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('demoUser');
     currentUser = null;
-    currentToken = null;
-    localStorage.removeItem('access_token');
-    authActions.classList.remove('hidden');
-    authUser.classList.add('hidden');
-    showNotification('Has escapado... por ahora.', 'Huida Exitosa', 'info');
+    document.getElementById('authActions').classList.remove('hidden');
+    document.getElementById('authUser').classList.add('hidden');
+    window.location.reload();
 }
 
-/* --- Store & Cart Logic --- */
-let cart = [];
-const cartOverlay = document.getElementById('cartOverlay');
-const cartList = document.getElementById('cartList');
-const cartTotalSpan = document.getElementById('cartTotal');
+// ==========================================
+// TIENDA (STORE)
+// ==========================================
+let allProducts = [];
 
-async function loadProducts() {
-    const storeGrid = document.querySelector('.store-grid');
+async function fetchProducts() {
     try {
-        const response = await fetch(`${API_URL}/products/`);
-        if (response.ok) {
-            const products = await response.json();
-            if (products.length === 0) {
-                storeGrid.innerHTML = '<p style="color:white; text-align:center;">La tienda está vacía... por ahora.</p>';
-                return;
+        // MOCK DATA INICIAL (Fallback)
+        const mockProducts = [
+            { id: 101, name: "Máscara de la Peste", price: 25.00, type: "items", image_url: "Images/mask.png", description: "Protégete de las miasmas." },
+            { id: 102, name: "Vial de Sangre Falsa", price: 8.50, type: "potions", image_url: "Images/blood.png", description: "Realista y comestible." },
+            { id: 103, name: "Capa de Vampiro", price: 45.00, type: "items", image_url: "Images/cape.png", description: "Terciopelo negro genuino." },
+            { id: 104, name: "Elixir de Vida (Bebida)", price: 5.00, type: "potions", image_url: "Images/elixir.png", description: "Recupera energía vital." },
+            { id: 105, name: "Muñeco Vudú", price: 15.66, type: "items", image_url: "Images/voodoo.png", description: "Alfileres incluidos." }
+        ];
+
+        // Intentar fetch real con timeout corto
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        try {
+            const res = await fetch(`${API_URL}/products/`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                allProducts = await res.json();
+            } else {
+                allProducts = mockProducts;
             }
-            storeGrid.innerHTML = ''; // Clear loading
-            products.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-icon">${p.image_url || '📦'}</div>
-                    <h4>${p.name}</h4>
-                    <p class="price">$${p.price.toFixed(2)}</p>
-                    <button class="btn-buy small" onclick="addToCart('${p.name}', ${p.price})">Añadir</button>
-                `;
-                storeGrid.appendChild(card);
-            });
+        } catch (e) {
+            allProducts = mockProducts; // Fallback a mock si falla fetch o timeout
         }
-    } catch (e) {
-        console.error("Error loading products", e);
-        document.getElementById('loadingStore').innerText = "Error invocando productos.";
+
+        renderStore(allProducts);
+
+    } catch (err) {
+        console.warn("Error cargando productos", err);
     }
 }
 
-function addToCart(itemBase, price) {
-    // Note: itemBase is passing name only for simplicity, ideally pass ID.
-    // Since this is a simple cart, we keep it as is.
-    /*
-    if (!currentUser) {
-        showNotification('Debes iniciar sesión para comprar almas.', 'Acceso Denegado', 'error');
-        toggleModal('login');
+function renderStore(products) {
+    const grid = document.getElementById('storeGrid');
+    grid.innerHTML = '';
+
+    if (products.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">El vacío absoluto...</p>';
         return;
     }
-    */
-    // Allow guest cart, but require login for checkout? logic choice.
-    // The previous script required login. I'll keep it open but maybe warn on checkout.
 
-    cart.push({ item: itemBase, price: price });
-    updateCart();
-    cartOverlay.classList.remove('hidden');
+    products.forEach(p => {
+        if (p.type === 'ticket') return;
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <div class="product-image-container">
+                <span style="font-size: 4rem;">🔮</span> 
+            </div>
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <p style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">${p.description || 'Objeto misterioso'}</p>
+                <div class="product-price">$${p.price.toFixed(2)}</div>
+                <button class="add-to-cart-btn" onclick="addToCart('${p.name}', ${p.price}, ${p.id})">Añadir a la Cesta</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
 }
 
-function updateCart() {
-    cartList.innerHTML = '';
+function filterStore(type) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    if (type === 'all') {
+        renderStore(allProducts);
+    } else {
+        const filtered = allProducts.filter(p => {
+            if (type === 'items') return p.type === 'items' || p.type === 'item';
+            if (type === 'potions') return p.type === 'potions';
+            return false;
+        });
+        renderStore(filtered);
+    }
+}
+
+// ==========================================
+// CARRITO (CART)
+// ==========================================
+function addToCart(name, price, id = null, type = 'item') {
+    cart.push({ name, price, id, type });
+    updateCartIcon();
+    showNotification(`Añadido: ${name}`);
+    renderCart();
+
+    // Abrir carrito
+    const overlay = document.getElementById('cartOverlay');
+    overlay.classList.add('active');
+}
+
+function updateCartIcon() {
+    document.getElementById('cartCount').textContent = cart.length;
+}
+
+function toggleCart() {
+    const overlay = document.getElementById('cartOverlay');
+    overlay.classList.toggle('active');
+    renderCart();
+}
+
+function renderCart() {
+    const list = document.getElementById('cartList');
+    const totalEl = document.getElementById('cartTotal');
+
+    list.innerHTML = '';
     let total = 0;
-    cart.forEach((product, index) => {
-        total += product.price;
-        const li = document.createElement('li');
-        li.innerText = `${product.item} - $${product.price.toFixed(2)}`;
-        li.style.cursor = 'pointer';
-        li.title = 'Clic para eliminar';
-        li.onclick = () => removeFromCart(index);
-        cartList.appendChild(li);
-    });
-    cartTotalSpan.innerText = total.toFixed(2);
+
+    if (cart.length === 0) {
+        list.innerHTML = '<li style="text-align: center; padding: 20px;">Tu alma está vacía...</li>';
+    } else {
+        cart.forEach((item, index) => {
+            total += item.price;
+            const li = document.createElement('li');
+            li.style.borderBottom = "1px solid #333";
+            li.style.padding = "10px 0";
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+            li.style.color = "#ccc";
+
+            li.innerHTML = `
+                <span>${item.name}</span>
+                <span>$${item.price.toFixed(2)} <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer; margin-left: 5px;">✕</button></span>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    totalEl.textContent = total.toFixed(2);
 }
 
 function removeFromCart(index) {
     cart.splice(index, 1);
-    updateCart();
+    updateCartIcon();
+    renderCart();
 }
 
-function toggleCart() {
-    cartOverlay.classList.toggle('hidden');
-}
-
-function checkout() {
-    if (cart.length === 0) {
-        showNotification('Tu cesta está vacía.', 'Vacío Infinito', 'error');
-    } else {
-        if (!currentUser) {
-            showNotification('Identifícate primero para reclamar estos bienes.', 'Login Requerido', 'error');
-            toggleModal('login');
-            return;
-        }
-        showNotification('Compra realizada. Tu alma ha sido debitada.', 'Pacto Sellado', 'blood');
-        cart = [];
-        updateCart();
+async function checkout() {
+    if (!currentUser) {
+        alert("Debes identificarte primero.");
+        toggleModal('login');
         toggleCart();
+        return;
     }
+
+    if (cart.length === 0) {
+        alert("Tu cesta está vacía.");
+        return;
+    }
+
+    // Simulación de checkout
+    alert("¡Trato cerrado! Tu alma ha sido procesada.\n\n(En modo demo esto no se guarda en base de datos)");
+    cart = [];
+    updateCartIcon();
+    renderCart();
+    toggleCart();
 }
 
-/* --- Game Logic (Whack-a-Ghost) --- */
-let score = 0;
-let gameInterval;
-const gameArea = document.getElementById('gameArea');
-const target = document.getElementById('target');
-const scoreSpan = document.getElementById('score');
-
+// ==========================================
+// JUEGO
+// ==========================================
 function startGame() {
-    score = 0;
-    scoreSpan.innerText = score;
+    if (gameActive) return;
+
+    const gameArea = document.getElementById('gameArea');
+    const target = document.getElementById('target');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+
+    gameActive = true;
+    gameScore = 0;
+    scoreDisplay.textContent = '0';
+
     target.classList.remove('hidden');
     moveTarget();
-    clearInterval(gameInterval);
-    gameInterval = setInterval(moveTarget, 1000);
-    setTimeout(endGame, 15000);
+
+    setTimeout(() => {
+        endGame();
+    }, 15000);
 }
 
 function moveTarget() {
-    const x = Math.random() * (gameArea.clientWidth - 50);
-    const y = Math.random() * (gameArea.clientHeight - 50);
-    target.style.left = x + 'px';
-    target.style.top = y + 'px';
+    if (!gameActive) return;
+
+    const target = document.getElementById('target');
+    const gameArea = document.getElementById('gameArea');
+
+    const maxX = gameArea.clientWidth - 50;
+    const maxY = gameArea.clientHeight - 50;
+
+    const randomX = Math.floor(Math.random() * maxX);
+    const randomY = Math.floor(Math.random() * maxY);
+
+    target.style.left = randomX + 'px';
+    target.style.top = randomY + 'px';
+
+    clearTimeout(gameTimer);
+    gameTimer = setTimeout(moveTarget, 800 + Math.random() * 500);
 }
 
 function hitTarget() {
-    score++;
-    scoreSpan.innerText = score;
+    if (!gameActive) return;
+
+    gameScore += 10;
+    document.getElementById('scoreDisplay').textContent = gameScore;
+
+    const target = document.getElementById('target');
+    target.style.transform = "scale(0.8)";
+    setTimeout(() => target.style.transform = "scale(1)", 100);
+
     moveTarget();
-    clearInterval(gameInterval);
-    gameInterval = setInterval(moveTarget, 800);
 }
 
-async function endGame() {
-    clearInterval(gameInterval);
-    target.classList.add('hidden');
-    showNotification(`Juego Terminado. Puntuación: ${score}.`, 'Fin del Juego', 'info');
+function endGame() {
+    gameActive = false;
+    document.getElementById('target').classList.add('hidden');
+    clearTimeout(gameTimer);
+
+    alert(`¡Tiempo! Puntuación final: ${gameScore}`);
 
     if (currentUser) {
-        try {
-            await fetch(`${API_URL}/games/score`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${currentToken}`
-                },
-                body: JSON.stringify({ score: score, game_name: "Whack-a-Ghost" })
-            });
-            console.log("Score saved");
-        } catch (e) {
-            console.error("Error saving score", e);
+        // Guardar score...
+    }
+}
+
+// ==========================================
+// CHAT BOT & EXTRAS
+// ==========================================
+function toggleChat() {
+    const chat = document.getElementById('chatWidget');
+    chat.classList.toggle('closed');
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    addMessage(msg, 'user');
+    input.value = '';
+
+    setTimeout(() => {
+        let reply = "Los espíritus guardan silencio...";
+        if (msg.toLowerCase().includes('precio') || msg.toLowerCase().includes('ticket')) {
+            reply = "El precio es tu alma... o $6.66 por un ticket mortal.";
+        } else if (msg.toLowerCase().includes('hola')) {
+            reply = "Te estábamos esperando...";
+        }
+        addMessage(reply, 'bot');
+    }, 1000);
+}
+
+function addMessage(text, sender) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `msg ${sender}`;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function openVideoModal() {
+    document.getElementById('videoModal').classList.remove('hidden');
+}
+
+function closeVideoModal() {
+    document.getElementById('videoModal').classList.add('hidden');
+    const iframe = document.getElementById('trailerFrame');
+    iframe.src = iframe.src;
+}
+
+function showNotification(text) {
+    console.log("NOTIFICACIÓN:", text);
+}
+
+// ==========================================
+// GOOGLE SIGN-IN
+// ==========================================
+async function handleGoogleSignIn(response) {
+    // response.credential contiene el JWT token de Google
+    const googleToken = response.credential;
+
+    try {
+        // Enviar token al backend para validar y crear/autenticar usuario
+        const res = await fetch(`${API_URL}/users/google-auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: googleToken })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('token', data.access_token);
+            localStorage.removeItem('demoUser');
+
+            // Cerrar modal y actualizar UI
+            toggleModal();
+            checkAuthSession();
+
+            alert("¡Bienvenido! Tu cuenta de Google ha sido vinculada.");
+        } else {
+            const err = await res.json();
+            throw new Error(err.detail || "Error al autenticar con Google");
+        }
+    } catch (e) {
+        console.error("Google Auth Error:", e);
+
+        // Fallback: Modo demo si el backend no responde
+        if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+            // Decodificar el JWT de Google para extraer datos básicos (solo el payload)
+            const payload = JSON.parse(atob(googleToken.split('.')[1]));
+
+            const mockToken = "google_demo_" + Date.now();
+            localStorage.setItem('token', mockToken);
+            localStorage.setItem('demoUser', JSON.stringify({
+                username: payload.name || payload.email.split('@')[0],
+                email: payload.email
+            }));
+
+            toggleModal();
+            checkAuthSession();
+            alert("⚠️ MODO DEMO ⚠️\nBackend no detectado. Usando datos de tu cuenta Google localmente.");
+        } else {
+            alert("Error: " + e.message);
         }
     }
 }
 
-/* --- Chat Bot Logic (Simple Local Logic Preserved) --- */
-const chatWidget = document.getElementById('chatWidget');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-
-function toggleChat() {
-    chatWidget.classList.toggle('closed');
-}
-
-function sendMessage() {
-    const text = chatInput.value;
-    if (!text) return;
-    addMessage(text, 'user');
-    chatInput.value = '';
-    setTimeout(() => {
-        const response = getBotResponse(text);
-        addMessage(response, 'bot');
-    }, 500);
-}
-
-function getBotResponse(input) {
-    const lowerInput = input.toLowerCase();
-    if (lowerInput.includes('comprar') || lowerInput.includes('adquirir') || lowerInput.includes('pagar') || lowerInput.includes('instrucciones')) {
-        return "Para unirte a nosotros: <br> 1. Ve a la sección de 'Pase al Inframundo'. <br> 2. Elige tu destino. <br> 3. Añade al carrito y paga con tu alma.";
-    }
-    if (lowerInput.includes('precio') || lowerInput.includes('boleto') || lowerInput.includes('costo') || lowerInput.includes('cuanto')) {
-        return "Las entradas tienen un precio de alma: <br> - Mortal (General): $6.66 <br> - Demonio (VIP): $13.13";
-    }
-    if (lowerInput.includes('servicio') || lowerInput.includes('ofrecen') || lowerInput.includes('que hay')) {
-        return "En este campus maldito encontrarás: <br> - Proyección de películas <br> - Juego de Supervivencia <br> - Tienda de artículos oscuros";
-    }
-    if (lowerInput.includes('juego') || lowerInput.includes('jugar') || lowerInput.includes('trata')) {
-        return "El desafío 'Sobrevive': Tienes 15 segundos para cazar tantos espectros como puedas.";
-    }
-    return "Esa pregunta aún no está disponible en mis conocimientos sobrenaturales...";
-}
-
-function addMessage(text, type) {
-    const div = document.createElement('div');
-    div.classList.add('msg', type);
-    div.innerHTML = text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-/* --- Video Logic --- */
-const videoModal = document.getElementById('videoModal');
-const trailerFrame = document.getElementById('trailerFrame');
-
-function playVideo() {
-    videoModal.classList.remove('hidden');
-}
-
-function closeVideo() {
-    videoModal.classList.add('hidden');
-    const currentSrc = trailerFrame.src;
-    trailerFrame.src = '';
-    trailerFrame.src = currentSrc;
-}
-
-videoModal.onclick = function (e) {
-    if (e.target === videoModal) {
-        closeVideo();
-    }
-}

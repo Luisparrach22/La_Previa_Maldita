@@ -4,106 +4,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terror en el Campus - Evento Oficial</title>
+    <title>La Previa Maldita | Evento de Terror</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="shortcut icon" href="/Images/image-preview-ico.ico" type="image/x-icon" width="30px" height="30px">
+    <link rel="shortcut icon" href="/Images/image-preview-ico.ico" type="image/x-icon">
     <link
-        href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Roboto:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Outfit:wght@300;400;700&family=Roboto:wght@400;700&display=swap"
         rel="stylesheet">
-
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
-    <!-- Auth Bar -->
-    <div class="auth-bar" id="authBar">
-        <div class="container auth-content">
-            <img src="/Images/image_logo-removebg-preview.png" alt="Logo" width="180px">
-            <span id="userDisplay">¿Te atreves a entrar?</span>
-            <div class="auth-actions" id="authActions">
-                <button class="btn-ghost small" onclick="toggleModal('login')">Entrar</button>
-                <button class="btn-blood small" onclick="toggleModal('register')">Crear Cuenta</button>
-            </div>
-            <div class="auth-user hidden" id="authUser">
-                <span id="usernameSpan">Espectro Invitado</span>
-                <button class="btn-ghost small" onclick="toggleCart()">🛒 Ver Cesta</button>
-                <button class="btn-ghost small" onclick="logout()">Huir</button>
-            </div>
+    <!-- Navigation Overlay -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-logo">
+            <a href="#hero">
+                <img src="/Images/image_logo-removebg-preview.png" alt="La Previa Maldita" style="height: 50px;">
+            </a>
         </div>
+        <ul class="nav-links">
+            <li><a href="#hero">Inicio</a></li>
+            <li><a href="#event">El Evento</a></li>
+            <li><a href="#tickets">Tickets</a></li>
+            <li><a href="#store">Tienda Maldita</a></li>
+            <li><a href="#games">Juegos Mortales</a></li>
+        </ul>
+        <div class="nav-auth" id="authActions">
+            <button class="btn-ghost small" onclick="toggleModal('login')">Ingresar</button>
+            <button class="btn-blood small" onclick="toggleModal('register')">Unirse</button>
+        </div>
+
+        <!-- USER LOGGED IN AREA -->
+        <div class="nav-user hidden" id="authUser">
+            <span class="user-greeting">Hola, <span id="usernameSpan" class="blood-text">Mortal</span></span>
+
+            <!-- NEW PROFILE BUTTON -->
+            <a href="user_page.html" class="btn-ghost small"
+                style="text-decoration: none; margin-right: 15px; border-color: var(--blood-red); color: var(--blood-red);">
+                👤 Mi Santuario
+            </a>
+
+            <button class="btn-icon" onclick="toggleCart()">
+                🛒 <span id="cartCount" class="badge">0</span>
+            </button>
+            <button class="btn-ghost small logout-btn" onclick="logout()">Salir</button>
+        </div>
+
+        <div class="hamburger" onclick="toggleMobileNav()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#hero" onclick="toggleMobileNav()">Inicio</a>
+        <a href="#event" onclick="toggleMobileNav()">El Evento</a>
+        <a href="#tickets" onclick="toggleMobileNav()">Tickets</a>
+        <a href="#store" onclick="toggleMobileNav()">Tienda</a>
+        <a href="#games" onclick="toggleMobileNav()">Juegos</a>
     </div>
 
-    <div class="container main-container">
-        <!-- Header -->
-        <header class="main-header">
-            <h1 class="glitch-text" data-text="CARTELERA PADRENUESTRO">CARTELERA PADRENUESTRO</h1>
-            <p class="subtitle fade-in">El evento paranormal del siglo</p>
-        </header>
+    <!-- Hero Section -->
+    <header id="hero" class="hero-section">
+        <div class="hero-overlay"></div>
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="Videos/Creación_de_Video_para_Evento_de_Terror.mp4" type="video/mp4">
+        </video>
 
-        <!-- Hero / Poster Section -->
-        <section class="poster-section">
-            <div class="poster-card">
-                <div class="poster-visual">
-                    <div class="moon"></div>
-                    <h2>NOCHE DE<br><span class="blood-text">ALMAS PERDIDAS</span></h2>
-                    <p class="date">31 DE OCTUBRE | 00:00 AM</p>
-                    <p class="location">CEMENTERIO CENTRAL &bull; CAMPUS</p>
+        <div class="hero-content fade-in-up">
+            <h1 class="glitch-text" data-text="LA PREVIA MALDITA">LA PREVIA MALDITA</h1>
+            <p class="hero-subtitle">Donde tus pesadillas cobran vida</p>
+            <div class="countdown-container">
+                <div class="time-unit">
+                    <span id="days">00</span>
+                    <label>Días</label>
+                </div>
+                <div class="time-unit">
+                    <span id="hours">00</span>
+                    <label>Horas</label>
+                </div>
+                <div class="time-unit">
+                    <span id="minutes">00</span>
+                    <label>Min</label>
+                </div>
+                <div class="time-unit">
+                    <span id="seconds">00</span>
+                    <label>Seg</label>
                 </div>
             </div>
-            <!-- Video Placeholder Button -->
-            <button class="btn-video pulse-anim" onclick="playVideo()">
-                <span>▶ VER TRAILER OFICIAL</span>
-            </button>
+            <div class="hero-actions">
+                <a href="#tickets" class="btn-blood large pulse-anim">Obtener Pase</a>
+                <button class="btn-video-hero" onclick="openVideoModal()">▶ Ver Tráiler</button>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Explora el horror</span>
+            <div class="mouse"></div>
+        </div>
+    </header>
+
+    <div class="container main-container">
+
+        <!-- Info / Event Section -->
+        <section id="event" class="section event-info">
+            <div class="info-card glass-panel">
+                <div class="info-icon">☠️</div>
+                <h3>Ubicación Secreta</h3>
+                <p>Cementerio Central &bull; Zona Prohibida</p>
+            </div>
+            <div class="info-card glass-panel">
+                <div class="info-icon">🌑</div>
+                <h3>Hora de las Brujas</h3>
+                <p>31 de Octubre &bull; Medianoche</p>
+            </div>
+            <div class="info-card glass-panel">
+                <div class="info-icon">🩸</div>
+                <h3>Código de Vestimenta</h3>
+                <p>Terror Elegante &bull; Máscara Obligatoria</p>
+            </div>
         </section>
 
         <!-- Tickets Section -->
-        <section class="section tickets-section" id="tickets">
-            <h2 class="section-title">Adquiere tu Pase al Inframundo</h2>
+        <section id="tickets" class="section tickets-section">
+            <h2 class="section-title">Pases al Inframundo</h2>
             <div class="tickets-grid">
-                <div class="ticket-card">
-                    <h3>Mortal</h3>
-                    <p class="price">$6.66</p>
-                    <ul>
-                        <li>Acceso General</li>
-                        <li>1 Vida Extra</li>
-                    </ul>
-                    <button class="btn-buy" onclick="addToCart('Ticket Mortal', 6.66)">Comprar</button>
+                <!-- Ticket Mortal -->
+                <div class="ticket-card glass-panel">
+                    <div class="ticket-header">
+                        <h3>Mortal</h3>
+                        <p class="price">$6.66</p>
+                    </div>
+                    <div class="ticket-body">
+                        <ul>
+                            <li>✓ Acceso General</li>
+                            <li>✓ 1 Vida Extra</li>
+                            <li>✗ Acceso a Zona VIP</li>
+                            <li>✗ Bebidas Espirituales</li>
+                        </ul>
+                    </div>
+                    <button class="btn-buy" onclick="addToCart('Ticket Mortal', 6.66, 1, 'ticket')">Sacrificar
+                        $6.66</button>
                 </div>
-                <div class="ticket-card premium">
-                    <h3>Demonio</h3>
-                    <p class="price">$13.13</p>
-                    <ul>
-                        <li>Acceso VIP</li>
-                        <li>Bebida de Sangre</li>
-                        <li>Inmunidad Temporal</li>
-                    </ul>
-                    <button class="btn-buy" onclick="addToCart('Ticket Demonio', 13.13)">Comprar</button>
-                </div>
-            </div>
-        </section>
 
-        <!-- Mini Game Section -->
-        <section class="section game-section" id="game">
-            <div class="game-container">
-                <div class="game-header">
-                    <h2><span class="blood-text">SOBREVIVE</span> AL JUEGO</h2>
-                    <p>Puntuación: <span id="score">0</span></p>
+                <!-- Ticket Demonio (Featured) -->
+                <div class="ticket-card premium glass-panel">
+                    <div class="ribbon">MÁS VENDIDO</div>
+                    <div class="ticket-header">
+                        <h3>Demonio</h3>
+                        <p class="price">$13.13</p>
+                    </div>
+                    <div class="ticket-body">
+                        <ul>
+                            <li>✓ Acceso VIP Prioritario</li>
+                            <li>✓ Barra Libre de Sangre</li>
+                            <li>✓ Inmunidad Temporal</li>
+                            <li>✓ Foto con el Diablo</li>
+                        </ul>
+                    </div>
+                    <button class="btn-blood glow-effect"
+                        onclick="addToCart('Ticket Demonio', 13.13, 2, 'ticket')">Pactar por $13.13</button>
                 </div>
-                <div class="game-area" id="gameArea">
-                    <button class="btn-start" onclick="startGame()">JUGAR SI TE ATREVES</button>
-                    <div id="target" class="ghost-target hidden" onclick="hitTarget()">👻</div>
+
+                <!-- Ticket Fantasma -->
+                <div class="ticket-card glass-panel">
+                    <div class="ticket-header">
+                        <h3>Fantasma</h3>
+                        <p class="price">$10.00</p>
+                    </div>
+                    <div class="ticket-body">
+                        <ul>
+                            <li>✓ Pase Doble</li>
+                            <li>✓ Acceso Invisible</li>
+                            <li>✓ Guía Espiritual</li>
+                            <li>✗ Inmunidad</li>
+                        </ul>
+                    </div>
+                    <button class="btn-buy" onclick="addToCart('Ticket Fantasma', 10.00, 3, 'ticket')">Invocar por
+                        $10.00</button>
                 </div>
             </div>
         </section>
 
         <!-- Store Section -->
-        <section class="section store-section" id="store">
-            <h2 class="section-title">Tienda Maldita</h2>
-            <div class="store-grid">
-                <!-- Products will be injected or static -->
-                <!-- Los productos serán cargados dinámicamente desde el inframundo (API) -->
-                <p id="loadingStore" style="color: var(--spectral-green); text-align: center; width: 100%;">Invocando
-                    objetos malditos...</p>
+        <section id="store" class="section store-section">
+            <div class="section-header">
+                <h2 class="section-title">Tienda Maldita</h2>
+                <div class="store-filters">
+                    <button class="filter-btn active" onclick="filterStore('all')">Todo</button>
+                    <button class="filter-btn" onclick="filterStore('items')">Artículos</button>
+                    <button class="filter-btn" onclick="filterStore('potions')">Pociones</button>
+                </div>
+            </div>
+
+            <div class="store-grid" id="storeGrid">
+                <!-- Dynamic Content Loading Placeholder -->
+                <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">💀</div>
+                    <p>Invocando objetos malditos...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <section id="games" class="section game-section">
+            <div class="game-banner">
+                <div class="game-content">
+                    <h2 class="glitch-text-small">¿JUGAMOS UN JUEGO?</h2>
+                    <p>Sobrevive a los espectros y gana descuentos reales en la tienda.</p>
+                    <div class="score-board">
+                        <span>Tu Puntuación: <strong id="scoreDisplay" class="blood-text">0</strong></span>
+                        <span>Récord Personal: <strong id="highScoreDisplay">0</strong></span>
+                    </div>
+                    <button class="btn-start-game" onclick="startGame()">DESAFIAR AL DESTINO</button>
+                </div>
+                <div class="game-visual" id="gameArea">
+                    <div id="target" class="ghost-target hidden" onclick="hitTarget()">👻</div>
+                </div>
             </div>
         </section>
 
@@ -126,48 +246,109 @@
     </div>
 
     <!-- Cart Overlay -->
-    <div class="cart-overlay hidden" id="cartOverlay">
-        <h3>Tu Cesta Fúnebre</h3>
-        <ul id="cartList"></ul>
-        <p>Total: $<span id="cartTotal">0.00</span></p>
-        <button class="btn-blood" onclick="checkout()">Pagar con tu Alma</button>
-        <button class="btn-ghost" onclick="toggleCart()">Cerrar</button>
-    </div>
+    <div class="cart-overlay" id="cartOverlay">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-family: 'Nosifer', cursive; color: var(--blood-red);">Tu Cesta</h3>
+            <button class="btn-ghost small" onclick="toggleCart()">X</button>
+        </div>
 
-    <!-- Auth Modals -->
-    <div id="modalOverlay" class="modal-overlay hidden">
-        <div class="modal">
-            <h2 id="modalTitle">Registro</h2>
-            <input type="text" id="usernameInput" placeholder="Nombre de la víctima">
-            <input type="password" id="passwordInput" placeholder="Contraseña de ultratumba" style="margin-top: 10px;">
-            <button class="btn-blood" onclick="handleAuthSubmit()">Confirmar</button>
-            <button class="btn-text" onclick="toggleModal()">Cancelar</button>
+        <ul id="cartList" style="list-style: none;">
+            <!-- Cart Items -->
+            <li style="text-align: center; color: #666; padding: 20px;">Tu alma está vacía...</li>
+        </ul>
+
+        <div style="border-top: 1px solid #333; padding-top: 20px; margin-top: auto;">
+            <div
+                style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;">
+                <span>Total:</span>
+                <span>$<span id="cartTotal">0.00</span></span>
+            </div>
+            <button class="btn-blood" style="width: 100%;" onclick="checkout()">Pagar con tu Alma</button>
         </div>
     </div>
 
-    <!-- Notification Modal -->
-    <div id="notificationModal" class="modal-overlay hidden" style="z-index: 4000;">
-        <div class="modal notification-content">
-            <h2 id="notifTitle" class="creepy-font">Mensaje del Más Allá</h2>
-            <p id="notifMessage">...</p>
-            <button class="btn-blood small" onclick="closeNotification()">Entendido</button>
+    <!-- Auth Modals -->
+    <div id="authModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modalTitle">Registro</h2>
+
+            <!-- Google Sign-In Button -->
+            <div id="googleButtonContainer" style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div id="g_id_onload"
+                    data-client_id="555615546744-ljrqcr095d340do88u0r5e13qclciqan.apps.googleusercontent.com"
+                    data-context="signin" data-ux_mode="popup" data-callback="handleGoogleSignIn"
+                    data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black"
+                    data-text="signin_with" data-size="large" data-logo_alignment="left">
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <div style="display: flex; align-items: center; margin: 20px 0;">
+                <div style="flex: 1; height: 1px; background: #444;"></div>
+                <span style="padding: 0 15px; color: #666; font-size: 0.9rem;">o continúa con email</span>
+                <div style="flex: 1; height: 1px; background: #444;"></div>
+            </div>
+
+            <!-- Traditional Form -->
+            <input type="text" id="usernameInput" placeholder="Nombre de la víctima">
+            <input type="email" id="emailInput" placeholder="Email" style="margin-top: 10px;">
+            <input type="password" id="passwordInput" placeholder="Contraseña de ultratumba" style="margin-top: 10px;">
+            <button class="btn-blood" onclick="handleAuthSubmit()">Confirmar</button>
+            <button class="btn-ghost" onclick="toggleModal()">Cancelar</button>
+            <p id="authError" style="color: red; margin-top: 10px; display: none;"></p>
         </div>
     </div>
 
     <!-- Video Modal -->
     <div id="videoModal" class="video-modal hidden">
         <div class="video-container">
-            <button class="close-video-btn" onclick="closeVideo()">✖ CERRAR</button>
+            <button class="close-video-btn" onclick="closeVideoModal()">✖ CERRAR</button>
             <div class="video-wrapper">
-                <!-- Replace src with your trailer video URL -->
                 <iframe id="trailerFrame" width="100%" height="100%"
                     src="Videos/Creación_de_Video_para_Evento_de_Terror.mp4" title="Trailer Oficial" frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen></iframe>
             </div>
             <p class="video-caption">¿PREPARADO PARA GRITAR?</p>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>La Previa Maldita</h3>
+                <p>El evento más terrorífico del año universitario. Prepárate para gritar.</p>
+                <div style="display: flex; gap: 15px; font-size: 1.5rem; margin-top: 20px;">
+                    <a href="#">🩸</a>
+                    <a href="#">☠️</a>
+                    <a href="#">🕷️</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h3>Enlaces Rápidos</h3>
+                <ul>
+                    <li><a href="#tickets">Tickets</a></li>
+                    <li><a href="#store">Tienda</a></li>
+                    <li><a href="#games">Juegos</a></li>
+                    <li><a href="#" onclick="toggleModal('login')">Mi Cuenta</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Suscríbete</h3>
+                <p>Recibe noticias del inframundo.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="tu@email.mortal">
+                    <button>➤</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 La Previa Maldita. Todos los derechos reservados... en esta vida y la otra.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>

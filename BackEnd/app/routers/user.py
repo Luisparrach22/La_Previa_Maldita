@@ -66,6 +66,107 @@ def login_for_access_token(form_data: schemas.UserLogin, db: Session = Depends(d
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@router.post("/google-auth", response_model=schemas.Token)
+def google_auth(google_data: schemas.GoogleAuthRequest, db: Session = Depends(database.get_db)):
+    """
+    Autenticar o registrar usuario mediante Google OAuth.
+    
+    - **token**: El JWT credential token proporcionado por Google Identity Services
+    
+    Si el usuario existe (por email), se autentica.
+    Si no existe, se crea automáticamente con los datos de Google.
+    """
+    from google.oauth2 import id_token
+    from google.auth.transport import requests
+    import os
+    
+    try:
+        # Verificar el token con Google
+        GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+        
+        if not GOOGLE_CLIENT_ID:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Google Client ID no configurado en el servidor"
+            )
+        
+        idinfo = id_token.verify_oauth2_token(
+            google_data.token, 
+            requests.Request(), 
+            GOOGLE_CLIENT_ID
+        )
+        
+        # Extraer datos del token verificado
+        email = idinfo.get('email')
+        full_name = idinfo.get('name', '')
+        given_name = idinfo.get('given_name', '')  # Nombre
+        family_name = idinfo.get('family_name', '')  # Apellido
+        picture = idinfo.get('picture', '')  # Avatar/Foto
+        
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se pudo obtener el email de Google"
+            )
+        
+        # Buscar si el usuario ya existe
+        db_user = crud.get_user_by_email(db, email=email)
+        
+        if db_user:
+            # Usuario existe - actualizar info de Google si está vacía
+            if not db_user.first_name and given_name:
+                db_user.first_name = given_name
+            if not db_user.last_name and family_name:
+                db_user.last_name = family_name
+            if not db_user.avatar_url and picture:
+                db_user.avatar_url = picture
+            db.commit()
+            db.refresh(db_user)
+        else:
+            # Crear nuevo usuario
+            # Generar username único basado en el nombre
+            base_username = full_name.replace(" ", "_").lower()[:20] if full_name else email.split('@')[0]
+            username = base_username
+            counter = 1
+            while crud.get_user_by_username(db, username=username):
+                username = f"{base_username}_{counter}"
+                counter += 1
+            
+            # Crear usuario con password random (no lo usará, entra por Google)
+            import secrets
+            random_password = secrets.token_urlsafe(32)
+            
+            # Crear el usuario en la base de datos
+            new_user_data = schemas.UserCreate(
+                username=username,
+                email=email,
+                password=random_password,
+                first_name=given_name or None,
+                last_name=family_name or None
+            )
+            db_user = crud.create_user(db=db, user=new_user_data)
+            
+            # Actualizar campos adicionales que no están en UserCreate
+            db_user.avatar_url = picture if picture else None
+            db_user.auth_provider = "google"
+            db.commit()
+            db.refresh(db_user)
+        
+        # Generar nuestro JWT token
+        access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth.create_access_token(
+            data={"sub": db_user.username}, expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+        
+    except ValueError as e:
+        # Token inválido
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token de Google inválido: {str(e)}"
+        )
+
+
 # ============================================================================
 # AUTHENTICATED USER ENDPOINTS
 # ============================================================================
