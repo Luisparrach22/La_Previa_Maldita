@@ -46,7 +46,7 @@ El proyecto permite a los usuarios sumergirse en la atmósfera del evento, regis
 * ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat&logo=sqlalchemy&logoColor=white) **ORM**
 * ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white) **Base de Datos**
 
-## 🚀 Instalación y Uso
+## 🚀 Instalación y Uso.
 
 Sigue estos pasos para levantar todo el entorno (Backend + Frontend).
 
