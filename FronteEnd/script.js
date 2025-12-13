@@ -71,33 +71,25 @@ function initCountdown() {
 function checkAuthSession() {
     const token = localStorage.getItem('token');
 
-    // Validar usuario demo primero (para pruebas visuales)
-    const demoUser = localStorage.getItem('demoUser');
-    if (demoUser && token) {
-        currentUser = JSON.parse(demoUser);
-        updateUIForUser(currentUser);
-        return;
-    }
+    if (!token) return;
 
-    if (token) {
-        // Validar token con el backend (endpoint /users/me)
-        fetch(`${API_URL}/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+    // Validar token con el backend
+    fetch(`${API_URL}/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+        .then(res => {
+            if (res.ok) return res.json();
+            throw new Error('Sesión expirada');
         })
-            .then(res => {
-                if (res.ok) return res.json();
-                throw new Error('Sesión expirada');
-            })
-            .then(user => {
-                currentUser = user;
-                updateUIForUser(user);
-            })
-            .catch(() => {
-                // Si falla la conexión pero hay token, puede ser modo demo fallido o server caído.
-                // Por seguridad, logout si era sesión real.
-                logout();
-            });
-    }
+        .then(user => {
+            currentUser = user;
+            updateUIForUser(user);
+        })
+        .catch(() => {
+            // Token inválido o servidor no disponible - limpiar sesión
+            localStorage.removeItem('token');
+            currentUser = null;
+        });
 }
 
 function updateUIForUser(user) {
@@ -130,8 +122,11 @@ async function handleAuthSubmit() {
     const password = document.getElementById('passwordInput').value;
     const errorMsg = document.getElementById('authError');
 
+    // Limpiar error anterior
+    errorMsg.style.display = 'none';
+
     if (!email || !password || (currentAuthMode === 'register' && !username)) {
-        errorMsg.textContent = "Todos los campos son obligatorios... para tu supervivencia.";
+        errorMsg.textContent = "Todos los campos son obligatorios.";
         errorMsg.style.display = 'block';
         return;
     }
@@ -146,58 +141,60 @@ async function handleAuthSubmit() {
             bodyData = { email, password };
         }
 
-        // INTENTO DE LOGIN REAL O MODO DEMO
-        try {
-            const res = await fetch(`${API_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
-            });
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData)
+        });
 
-            if (res.ok) {
-                const data = await res.json();
-                if (currentAuthMode === 'register') {
-                    alert("Cuenta creada. Ahora ingresa...");
-                    currentAuthMode = 'login';
-                    document.getElementById('modalTitle').textContent = 'Ingresar';
-                    return;
+        if (res.ok) {
+            const data = await res.json();
+            if (currentAuthMode === 'register') {
+                alert("✅ Cuenta creada exitosamente. Ahora puedes ingresar.");
+                currentAuthMode = 'login';
+                document.getElementById('modalTitle').textContent = 'Ingresar a la Pesadilla';
+                document.getElementById('usernameInput').value = '';
+                return;
+            }
+            localStorage.setItem('token', data.access_token);
+            checkAuthSession();
+            toggleModal();
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            let errorMessage = "❌ Error desconocido.";
+
+            // Manejar errores de validación de Pydantic (422)
+            if (res.status === 422 && errData.detail) {
+                if (Array.isArray(errData.detail)) {
+                    // Pydantic devuelve un array de errores
+                    const messages = errData.detail.map(e => e.msg || e.message || JSON.stringify(e));
+                    errorMessage = "❌ " + messages.join(", ");
+                } else if (typeof errData.detail === 'string') {
+                    errorMessage = "❌ " + errData.detail;
+                } else {
+                    errorMessage = "❌ Datos inválidos. Verifica la información.";
                 }
-                localStorage.setItem('token', data.access_token);
-                // Limpiar demo user si existe
-                localStorage.removeItem('demoUser');
-            } else {
-                if (res.status === 401) throw new Error("Credenciales inválidas");
-                throw new Error("Error en servidor");
+            } else if (res.status === 401) {
+                errorMessage = "❌ Email o contraseña incorrectos.";
+            } else if (res.status === 400) {
+                errorMessage = typeof errData.detail === 'string' ? "❌ " + errData.detail : "❌ Datos inválidos.";
+            } else if (errData.detail) {
+                errorMessage = typeof errData.detail === 'string' ? "❌ " + errData.detail : "❌ Error del servidor.";
             }
 
-        } catch (networkError) {
-            console.warn("Backend no disponible. Activando Modo Demo. Error:", networkError);
-
-            // ACTIVAR MODO DEMO
-            const mockToken = "demo_token_" + Date.now();
-            localStorage.setItem('token', mockToken);
-
-            const mockUser = {
-                username: username || email.split('@')[0] || "Viajero_Oscuro",
-                email: email || "demo@lapreviamaldita.com"
-            };
-            localStorage.setItem('demoUser', JSON.stringify(mockUser));
-
-            alert("⚠️ MODO DEMO ACTIVADO ⚠️\n(No se detectó el servidor, pero puedes probar la interfaz)");
+            errorMsg.textContent = errorMessage;
+            errorMsg.style.display = 'block';
         }
 
-        checkAuthSession();
-        toggleModal(); // Cerrar modal
-
-    } catch (err) {
-        errorMsg.textContent = err.message || "Error desconocido";
+    } catch (networkError) {
+        console.error("Error de conexión:", networkError);
+        errorMsg.textContent = "🔌 No hay conexión con el servidor. Verifica que el backend esté activo.";
         errorMsg.style.display = 'block';
     }
 }
 
 function logout() {
     localStorage.removeItem('token');
-    localStorage.removeItem('demoUser');
     currentUser = null;
     document.getElementById('authActions').classList.remove('hidden');
     document.getElementById('authUser').classList.add('hidden');
@@ -489,11 +486,10 @@ function showNotification(text) {
 // GOOGLE SIGN-IN
 // ==========================================
 async function handleGoogleSignIn(response) {
-    // response.credential contiene el JWT token de Google
     const googleToken = response.credential;
+    const errorMsg = document.getElementById('authError');
 
     try {
-        // Enviar token al backend para validar y crear/autenticar usuario
         const res = await fetch(`${API_URL}/users/google-auth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -503,38 +499,17 @@ async function handleGoogleSignIn(response) {
         if (res.ok) {
             const data = await res.json();
             localStorage.setItem('token', data.access_token);
-            localStorage.removeItem('demoUser');
-
-            // Cerrar modal y actualizar UI
             toggleModal();
             checkAuthSession();
-
-            alert("¡Bienvenido! Tu cuenta de Google ha sido vinculada.");
+            alert("✅ ¡Bienvenido! Sesión iniciada con Google.");
         } else {
-            const err = await res.json();
-            throw new Error(err.detail || "Error al autenticar con Google");
+            const err = await res.json().catch(() => ({}));
+            errorMsg.textContent = err.detail || "❌ Error al autenticar con Google.";
+            errorMsg.style.display = 'block';
         }
     } catch (e) {
         console.error("Google Auth Error:", e);
-
-        // Fallback: Modo demo si el backend no responde
-        if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
-            // Decodificar el JWT de Google para extraer datos básicos (solo el payload)
-            const payload = JSON.parse(atob(googleToken.split('.')[1]));
-
-            const mockToken = "google_demo_" + Date.now();
-            localStorage.setItem('token', mockToken);
-            localStorage.setItem('demoUser', JSON.stringify({
-                username: payload.name || payload.email.split('@')[0],
-                email: payload.email
-            }));
-
-            toggleModal();
-            checkAuthSession();
-            alert("⚠️ MODO DEMO ⚠️\nBackend no detectado. Usando datos de tu cuenta Google localmente.");
-        } else {
-            alert("Error: " + e.message);
-        }
+        errorMsg.textContent = "🔌 No hay conexión con el servidor. Verifica que el backend esté activo.";
+        errorMsg.style.display = 'block';
     }
 }
-
