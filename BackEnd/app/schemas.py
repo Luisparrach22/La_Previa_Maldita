@@ -117,6 +117,12 @@ class UserUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
 
+class UserCreateAdmin(UserCreate):
+    """Schema para creación de usuario por administrador"""
+    role: UserRole = UserRole.user
+    is_active: bool = True
+    is_verified: bool = False
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -221,6 +227,9 @@ class ProductCreate(ProductBase):
     event_id: Optional[int] = None
     ticket_type: Optional[TicketType] = None
     max_per_order: int = 10
+    is_active: bool = True
+    is_featured: bool = False
+    is_visible: bool = True
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None

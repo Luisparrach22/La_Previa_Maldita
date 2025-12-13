@@ -14,7 +14,7 @@ async function checkSession() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-        alert("Debes iniciar sesión para acceder a esta página.");
+        // Redirigir silenciosamente si no hay sesión
         window.location.href = 'index.html';
         return;
     }

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | La Previa Maldita</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="/Images/image-preview-ico.ico" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🎃</span>
+                <span class="logo-text">Admin Panel</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active" onclick="switchSection('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </li>
+                <li onclick="switchSection('users')">
+                    <span class="nav-icon">👥</span>
+                    <span>Usuarios</span>
+                </li>
+                <li onclick="switchSection('products')">
+                    <span class="nav-icon">🏷️</span>
+                    <span>Productos</span>
+                </li>
+                <li onclick="switchSection('orders')">
+                    <span class="nav-icon">📦</span>
+                    <span>Pedidos</span>
+                </li>
+                <li onclick="switchSection('events')">
+                    <span class="nav-icon">🎪</span>
+                    <span>Eventos</span>
+                </li>
+                <li onclick="switchSection('tickets')">
+                    <span class="nav-icon">🎟️</span>
+                    <span>Validar Tickets</span>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div class="admin-details">
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="admin-role">Administrador</span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logoutAdmin()">Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-title">
+                <h1 id="sectionTitle">Dashboard</h1>
+                <p id="sectionSubtitle">Vista general del sistema</p>
+            </div>
+            <div class="header-actions">
+                <span class="current-date" id="currentDate"></span>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" class="admin-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon users">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statUsers">-</span>
+                        <span class="stat-label">Usuarios Registrados</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orders">📦</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statOrders">-</span>
+                        <span class="stat-label">Pedidos Totales</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon revenue">💰</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statRevenue">-</span>
+                        <span class="stat-label">Ingresos Totales</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon tickets">🎟️</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTickets">-</span>
+                        <span class="stat-label">Tickets Vendidos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Pedidos Recientes</h3>
+                    <div class="recent-list" id="recentOrders">
+                        <p class="loading">Cargando...</p>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Usuarios Nuevos</h3>
+                    <div class="recent-list" id="recentUsers">
+                        <p class="loading">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="section-users" class="admin-section">
+            <div class="section-toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchUsers" placeholder="Buscar usuarios..." onkeyup="filterUsers()">
+                </div>
+                <button class="btn-primary" onclick="openUserModal()">+ Nuevo Usuario</button>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Proveedor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="section-products" class="admin-section">
+            <div class="section-toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchProducts" placeholder="Buscar productos..." onkeyup="filterProducts()">
+                </div>
+                <select id="filterProductType" onchange="filterProducts()">
+                    <option value="">Todos los tipos</option>
+                    <option value="ticket">Tickets</option>
+                    <option value="merchandise">Merchandise</option>
+                    <option value="drink">Bebidas</option>
+                    <option value="food">Comida</option>
+                </select>
+                <button class="btn-primary" onclick="openProductModal()">+ Nuevo Producto</button>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">Cargando productos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="section-orders" class="admin-section">
+            <div class="section-toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchOrders" placeholder="Buscar por número de orden..."
+                        onkeyup="filterOrders()">
+                </div>
+                <select id="filterOrderStatus" onchange="filterOrders()">
+                    <option value="">Todos los estados</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="confirmed">Confirmado</option>
+                    <option value="paid">Pagado</option>
+                    <option value="completed">Completado</option>
+                    <option value="cancelled">Cancelado</option>
+                </select>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Orden #</th>
+                            <th>Cliente</th>
+                            <th>Email</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Pago</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Cargando pedidos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="section-events" class="admin-section">
+            <div class="section-toolbar">
+                <button class="btn-primary" onclick="openEventModal()">+ Nuevo Evento</button>
+            </div>
+            <div class="events-grid" id="eventsGrid">
+                <p class="loading">Cargando eventos...</p>
+            </div>
+        </section>
+
+        <!-- Validate Tickets Section -->
+        <section id="section-tickets" class="admin-section">
+            <div class="ticket-validator">
+                <h2>Validar Ticket</h2>
+                <p>Escanea el código QR o ingresa el código del ticket manualmente</p>
+
+                <div class="validator-input">
+                    <input type="text" id="ticketCodeInput" placeholder="Ingresa el código del ticket (ej: TKT-1-123)">
+                    <button class="btn-primary" onclick="validateTicket()">Validar</button>
+                </div>
+
+                <div id="validationResult" class="validation-result hidden">
+                    <!-- Resultado de validación aparece aquí -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Nuevo Usuario</h2>
+                <button class="modal-close" onclick="closeUserModal()">&times;</button>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <input type="hidden" id="userId">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="userUsername" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña <small>(dejar vacío para no cambiar)</small></label>
+                    <input type="password" id="userPassword" minlength="6">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="userFirstName">
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" id="userLastName">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Rol</label>
+                        <select id="userRole">
+                            <option value="user">Usuario</option>
+                            <option value="vip">VIP</option>
+                            <option value="moderator">Moderador</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="userActive">
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeUserModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Nuevo Producto</h2>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="productDescription" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="productType" required>
+                            <option value="ticket">Ticket</option>
+                            <option value="merchandise">Merchandise</option>
+                            <option value="drink">Bebida</option>
+                            <option value="food">Comida</option>
+                            <option value="experience">Experiencia</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" id="productCategory" placeholder="ej: accesorios">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio (€)</label>
+                        <input type="number" id="productPrice" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" id="productStock" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>URL de Imagen</label>
+                    <input type="text" id="productImage" placeholder="https://...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="productActive">
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Destacado</label>
+                        <select id="productFeatured">
+                            <option value="false">No</option>
+                            <option value="true">Sí</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeProductModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderModal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Detalle de Pedido <span id="orderModalNumber"></span></h2>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div id="orderModalContent">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>

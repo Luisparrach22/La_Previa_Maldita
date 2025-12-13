@@ -44,6 +44,25 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.refresh(db_user)
     return db_user
 
+def create_user_admin(db: Session, user: schemas.UserCreateAdmin) -> models.User:
+    """Crear nuevo usuario (Admin)"""
+    hashed_password = auth.get_password_hash(user.password)
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone if hasattr(user, 'phone') else None,
+        role=user.role,
+        is_active=user.is_active,
+        is_verified=user.is_verified
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
     """Actualizar usuario existente"""
     db_user = get_user(db, user_id)
@@ -349,3 +368,36 @@ def get_order_item(db: Session, item_id: int) -> Optional[models.OrderItem]:
 def get_order_items(db: Session, order_id: int) -> List[models.OrderItem]:
     """Obtener todos los items de un pedido"""
     return db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id).all()
+
+
+# ============================================================================
+# TICKET VALIDATION
+# ============================================================================
+
+def get_ticket_by_code(db: Session, ticket_code: str) -> Optional[models.OrderItem]:
+    """Buscar un ticket por su código"""
+    return db.query(models.OrderItem).filter(
+        models.OrderItem.ticket_code == ticket_code
+    ).first()
+
+def mark_ticket_as_used(db: Session, ticket_code: str, admin_id: int) -> Optional[models.OrderItem]:
+    """Marcar un ticket como usado"""
+    from datetime import datetime
+    
+    ticket = get_ticket_by_code(db, ticket_code)
+    if not ticket:
+        return None
+    
+    if ticket.ticket_status == "used":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este ticket ya ha sido usado"
+        )
+    
+    ticket.ticket_status = "used"
+    ticket.ticket_used_at = datetime.utcnow()
+    ticket.ticket_checked_by = admin_id
+    
+    db.commit()
+    db.refresh(ticket)
+    return ticket

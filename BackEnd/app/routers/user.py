@@ -234,6 +234,34 @@ def delete_current_user(
 # ADMIN ENDPOINTS
 # ============================================================================
 
+@router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
+def create_user(
+    user: schemas.UserCreateAdmin, 
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Crear un nuevo usuario con permisos de administrador. **Solo administradores.**
+    """
+    # Verificar si el email ya existe
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="El email ya está registrado"
+        )
+    
+    # Verificar si el nombre de usuario ya existe
+    db_username = crud.get_user_by_username(db, username=user.username)
+    if db_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="El nombre de usuario ya está en uso"
+        )
+
+    return crud.create_user_admin(db=db, user=user)
+
+
 @router.get("/", response_model=List[schemas.UserResponse])
 def read_users(
     skip: int = 0,

@@ -1,13 +1,25 @@
 // ==========================================
 // CONFIGURACIÓN Y ESTADO GLOBAL
 // ==========================================
-const API_URL = "http://localhost:8000"; // Asegúrate de que tu backend corre aquí
+const API_URL = "http://localhost:8000";
 let currentUser = null;
 let cart = [];
 let gameScore = 0;
 let gameActive = false;
 let gameTimer;
-let currentAuthMode = 'login'; // 'login' or 'register'
+let currentAuthMode = 'login';
+
+// Performance: throttle function para scroll
+function throttle(func, limit) {
+    let inThrottle;
+    return function (...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
 
 // ==========================================
 // INICIALIZACIÓN
@@ -20,15 +32,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupScrollEffects() {
-    // Navbar scroll effect
-    window.addEventListener('scroll', () => {
-        const nav = document.getElementById('mainNav');
+    const nav = document.getElementById('mainNav');
+
+    // Navbar scroll effect con throttle para mejor rendimiento
+    const handleScroll = throttle(() => {
         if (window.scrollY > 50) {
             nav.classList.add('scrolled');
         } else {
             nav.classList.remove('scrolled');
         }
-    });
+    }, 100);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Mobile Menu Toggle
     window.toggleMobileNav = () => {
@@ -41,6 +56,12 @@ function setupScrollEffects() {
 // CUENTA REGRESIVA
 // ==========================================
 function initCountdown() {
+    // Cache DOM elements for performance
+    const daysEl = document.getElementById("days");
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
+
     // Fecha objetivo: 31 de Octubre del próximo octubre disponible
     const currentYear = new Date().getFullYear();
     const targetDate = new Date(`October 31, ${currentYear} 00:00:00`).getTime();
@@ -58,17 +79,17 @@ function initCountdown() {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        document.getElementById("days").innerText = days.toString().padStart(2, '0');
-        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
-        document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
-        document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+        daysEl.textContent = days.toString().padStart(2, '0');
+        hoursEl.textContent = hours.toString().padStart(2, '0');
+        minutesEl.textContent = minutes.toString().padStart(2, '0');
+        secondsEl.textContent = seconds.toString().padStart(2, '0');
     }, 1000);
 }
 
 // ==========================================
 // AUTENTICACIÓN
 // ==========================================
-function checkAuthSession() {
+function checkAuthSession(redirectAfterLogin = false) {
     const token = localStorage.getItem('token');
 
     if (!token) return;
@@ -84,12 +105,26 @@ function checkAuthSession() {
         .then(user => {
             currentUser = user;
             updateUIForUser(user);
+
+            // Redirigir automáticamente según el rol si es un login nuevo
+            if (redirectAfterLogin) {
+                redirectToUserPage(user);
+            }
         })
         .catch(() => {
             // Token inválido o servidor no disponible - limpiar sesión
             localStorage.removeItem('token');
             currentUser = null;
         });
+}
+
+// Función para redirigir según el rol del usuario
+function redirectToUserPage(user) {
+    if (user.role === 'admin') {
+        window.location.href = 'admin.html';
+    } else {
+        window.location.href = 'user_page.html';
+    }
 }
 
 function updateUIForUser(user) {
@@ -157,8 +192,9 @@ async function handleAuthSubmit() {
                 return;
             }
             localStorage.setItem('token', data.access_token);
-            checkAuthSession();
             toggleModal();
+            // Redirigir automáticamente después del login
+            checkAuthSession(true);
         } else {
             const errData = await res.json().catch(() => ({}));
             let errorMessage = "❌ Error desconocido.";
@@ -500,8 +536,8 @@ async function handleGoogleSignIn(response) {
             const data = await res.json();
             localStorage.setItem('token', data.access_token);
             toggleModal();
-            checkAuthSession();
-            alert("✅ ¡Bienvenido! Sesión iniciada con Google.");
+            // Redirigir automáticamente después del login con Google
+            checkAuthSession(true);
         } else {
             const err = await res.json().catch(() => ({}));
             errorMsg.textContent = err.detail || "❌ Error al autenticar con Google.";

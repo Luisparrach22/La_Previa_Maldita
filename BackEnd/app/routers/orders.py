@@ -245,3 +245,70 @@ def delete_order(
             detail="Pedido no encontrado"
         )
     return None
+
+
+# ============================================================================
+# TICKET VALIDATION ENDPOINTS
+# ============================================================================
+
+@router.get("/tickets/validate/{ticket_code}")
+def validate_ticket(
+    ticket_code: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Validar un ticket por su código. **Solo administradores.**
+    
+    Retorna información del ticket si existe.
+    """
+    ticket = crud.get_ticket_by_code(db, ticket_code)
+    
+    if not ticket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket no encontrado"
+        )
+    
+    # Obtener la orden asociada
+    order = crud.get_order(db, ticket.order_id)
+    
+    return {
+        "ticket_code": ticket.ticket_code,
+        "ticket_status": ticket.ticket_status,
+        "ticket_used_at": ticket.ticket_used_at,
+        "product_name": ticket.product_name,
+        "product_type": ticket.product_type,
+        "order_id": ticket.order_id,
+        "order_number": order.order_number if order else None,
+        "customer_email": order.customer_email if order else None,
+        "customer_name": order.customer_name if order else None
+    }
+
+
+@router.post("/tickets/use/{ticket_code}")
+def mark_ticket_used(
+    ticket_code: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Marcar un ticket como usado. **Solo administradores.**
+    
+    Una vez marcado, el ticket no puede ser usado nuevamente.
+    """
+    ticket = crud.mark_ticket_as_used(db, ticket_code, current_user.id)
+    
+    if not ticket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket no encontrado"
+        )
+    
+    return {
+        "message": "Ticket marcado como usado exitosamente",
+        "ticket_code": ticket.ticket_code,
+        "ticket_status": ticket.ticket_status,
+        "used_at": ticket.ticket_used_at,
+        "checked_by": current_user.username
+    }
