@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Santuario Personal | La Previa Maldita</title>
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/client_horror.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="shortcut icon" href="../assets/images/image-preview-ico.ico" type="image/x-icon">
@@ -21,6 +21,10 @@
         <!-- SIDEBAR -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-header">
+                <div class="soul-balance-display">
+                    <span class="soul-icon">👻</span>
+                    <span id="soulBalanceAmount">0</span>
+                </div>
                 <div class="avatar-circle">
                     <span id="userInitials">?</span>
                 </div>
@@ -79,13 +83,8 @@
                         </tr>
                     </thead>
                     <tbody id="ordersList">
-                        <!-- Example Row -->
                         <tr>
-                            <td>#666-A</td>
-                            <td>Ticket Demonio, Poción de Sangre</td>
-                            <td>$21.63</td>
-                            <td><span class="status-badge completed">Completado</span></td>
-                            <td>31/10/2025</td>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Cargando pactos...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -160,7 +159,7 @@
         </div>
     </div>
 
-    <script src="../assets/js/dashboard.js"></script>
+    <script src="../assets/js/dashboard.js?v=2"></script>
 </body>
 
 </html>

@@ -46,6 +46,12 @@ function setupUserUI(user) {
     document.getElementById('editUsername').value = user.username;
     document.getElementById('editEmail').value = user.email;
     document.getElementById('userInitials').textContent = displayName.charAt(0).toUpperCase();
+    
+    // Mostrar balance de almas
+    const soulBalance = user.soul_balance || 0;
+    document.getElementById('soulBalanceAmount').textContent = soulBalance;
+    
+    console.log('👻 Balance de almas:', soulBalance);
 }
 
 function logoutUser() {

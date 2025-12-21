@@ -106,11 +106,25 @@ function checkAuthSession(redirectAfterLogin = false) {
         })
         .then(user => {
             currentUser = user;
-            updateUIForUser(user);
-
-            // Redirigir automáticamente según el rol si es un login nuevo
-            if (redirectAfterLogin) {
+            
+            // Si estamos en la página de inicio (index.html) y el usuario ya tiene sesión,
+            // redirigir automáticamente a su panel correspondiente
+            const isOnIndexPage = window.location.pathname.endsWith('index.html') || 
+                                 window.location.pathname === '/' ||
+                                 window.location.pathname.endsWith('/');
+            
+            if (isOnIndexPage) {
+                // SIEMPRE redirigir si estamos en la página de inicio y hay sesión
+                console.log('🔄 Usuario autenticado detectado en página de inicio. Redirigiendo...');
                 redirectToUserPage(user);
+            } else {
+                // Solo actualizar UI si estamos en otra página
+                updateUIForUser(user);
+                
+                // Redirigir si es un login nuevo
+                if (redirectAfterLogin) {
+                    redirectToUserPage(user);
+                }
             }
         })
         .catch(() => {
