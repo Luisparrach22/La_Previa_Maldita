@@ -161,60 +161,11 @@
         <!-- Tickets Section -->
         <section id="tickets" class="section tickets-section">
             <h2 class="section-title">Pases al Inframundo</h2>
-            <div class="tickets-grid">
-                <!-- Ticket Mortal -->
-                <div class="ticket-card glass-panel">
-                    <div class="ticket-header">
-                        <h3>Mortal</h3>
-                        <p class="price">👻 666</p>
-                    </div>
-                    <div class="ticket-body">
-                        <ul>
-                            <li>✓ Acceso General</li>
-                            <li>✓ 1 Vida Extra</li>
-                            <li>✗ Acceso a Zona VIP</li>
-                            <li>✗ Bebidas Espirituales</li>
-                        </ul>
-                    </div>
-                    <button class="btn-buy" onclick="addToCart('Ticket Mortal', 666, 1, 'ticket')">Sacrificar
-                        666 Almas</button>
-                </div>
-
-                <!-- Ticket Demonio (Featured) -->
-                <div class="ticket-card premium glass-panel">
-                    <div class="ribbon">MÁS VENDIDO</div>
-                    <div class="ticket-header">
-                        <h3>Demonio</h3>
-                        <p class="price">👻 1313</p>
-                    </div>
-                    <div class="ticket-body">
-                        <ul>
-                            <li>✓ Acceso VIP Prioritario</li>
-                            <li>✓ Barra Libre de Sangre</li>
-                            <li>✓ Inmunidad Temporal</li>
-                            <li>✓ Foto con el Diablo</li>
-                        </ul>
-                    </div>
-                    <button class="btn-blood glow-effect"
-                        onclick="addToCart('Ticket Demonio', 1313, 2, 'ticket')">Pactar por 1313 Almas</button>
-                </div>
-
-                <!-- Ticket Fantasma -->
-                <div class="ticket-card glass-panel">
-                    <div class="ticket-header">
-                        <h3>Fantasma</h3>
-                        <p class="price">👻 1000</p>
-                    </div>
-                    <div class="ticket-body">
-                        <ul>
-                            <li>✓ Pase Doble</li>
-                            <li>✓ Acceso Invisible</li>
-                            <li>✓ Guía Espiritual</li>
-                            <li>✗ Inmunidad</li>
-                        </ul>
-                    </div>
-                    <button class="btn-buy" onclick="addToCart('Ticket Fantasma', 1000, 3, 'ticket')">Invocar por
-                        1000 Almas</button>
+            <div class="tickets-grid" id="ticketsGrid">
+                <!-- Dynamic Tickets Loading Placeholder -->
+                <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">🎟️</div>
+                    <p>Cargando pases al inframundo...</p>
                 </div>
             </div>
         </section>
@@ -225,8 +176,9 @@
                 <h2 class="section-title">Tienda Maldita</h2>
                 <div class="store-filters">
                     <button class="filter-btn active" onclick="filterStore('all')">Todo</button>
-                    <button class="filter-btn" onclick="filterStore('items')">Artículos</button>
-                    <button class="filter-btn" onclick="filterStore('potions')">Pociones</button>
+                    <button class="filter-btn" onclick="filterStore('merchandise')">Artículos</button>
+                    <button class="filter-btn" onclick="filterStore('drink')">Bebidas</button>
+                    <button class="filter-btn" onclick="filterStore('food')">Comida</button>
                 </div>
             </div>
 
@@ -380,7 +332,7 @@
         </div>
     </footer>
 
-    <script src="assets/js/script.js"></script>
+    <script src="assets/js/script.js?v=2"></script>
 </body>
 
 </html>

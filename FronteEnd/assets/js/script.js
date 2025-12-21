@@ -25,8 +25,10 @@ function throttle(func, limit) {
 // INICIALIZACIÓN
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("👻 La Previa Maldita SCRIPT v2 loaded");
     checkAuthSession();
     fetchProducts();
+    fetchTickets();
     initCountdown();
     setupScrollEffects();
 });
@@ -264,41 +266,129 @@ function logout() {
 }
 
 // ==========================================
-// TIENDA (STORE)
+// STORE & TICKETS
 // ==========================================
 let allProducts = [];
 
+async function fetchTickets() {
+    const grid = document.getElementById('ticketsGrid');
+    if (!grid) return; // Si no estamos en la página principal
+
+    try {
+        const res = await fetch(`${API_URL}/products/`);
+        
+        if (res.ok) {
+            const products = await res.json();
+            const tickets = products.filter(p => p.type === 'ticket' && p.is_active);
+            renderTickets(tickets);
+        } else {
+            console.warn("Error al cargar tickets:", res.status);
+            grid.innerHTML = '<p class="error-msg">Espíritus ocupados. Intenta más tarde.</p>';
+        }
+    } catch (e) {
+        console.warn("Error de red al cargar tickets:", e);
+        grid.innerHTML = '<p class="error-msg">Conexión con el inframundo fallida.</p>';
+    }
+}
+
+function renderTickets(tickets) {
+    const grid = document.getElementById('ticketsGrid');
+    grid.innerHTML = '';
+
+    if (tickets.length === 0) {
+        grid.innerHTML = `
+            <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">
+                <p>No hay pases disponibles por el momento.</p>
+            </div>
+        `;
+        return;
+    }
+
+    tickets.forEach(ticket => {
+        const isFeatured = ticket.is_featured;
+        const cardClass = isFeatured ? 'ticket-card premium glass-panel' : 'ticket-card glass-panel';
+        
+        // Imagen del ticket
+        let imageHtml = '';
+        if (ticket.image_url) {
+            imageHtml = `
+                <div class="ticket-image" style="height: 160px; overflow: hidden;">
+                    <img src="${ticket.image_url}" alt="${ticket.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+            `;
+        }
+
+        // Descripción (procesar saltos de línea)
+        let descHtml = '';
+        if (ticket.description) {
+            const lines = ticket.description.split('\n').filter(l => l.trim());
+            // Si parece una lista, usar UL
+            if (lines.some(l => l.startsWith('-') || l.startsWith('✓') || l.startsWith('•'))) {
+                descHtml = '<ul>' + lines.map(l => {
+                    const content = l.replace(/^[-✓•]/, '').trim();
+                    const icon = l.includes('✗') ? '✗' : '✓'; // Simple detección de negativo
+                    return `<li>${icon} ${content}</li>`;
+                }).join('') + '</ul>';
+            } else {
+                descHtml = `<p style="margin-bottom: 15px; font-size: 0.9em; opacity: 0.8;">${ticket.description}</p>`;
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = cardClass;
+        
+        const ribbon = isFeatured ? '<div class="ribbon">MÁS VENDIDO</div>' : '';
+        const price = Math.floor(ticket.price);
+
+        card.innerHTML = `
+            ${ribbon}
+            ${imageHtml}
+            <div class="ticket-header">
+                <h3>${ticket.name}</h3>
+                <p class="price">👻 ${price}</p>
+            </div>
+            <div class="ticket-body">
+                ${descHtml}
+            </div>
+            <button class="${isFeatured ? 'btn-blood glow-effect' : 'btn-buy'}" 
+                onclick="addToCart('${ticket.name.replace(/'/g, "\\'")}', ${price}, ${ticket.id}, 'ticket')">
+                ${isFeatured ? `Pactar por ${price} Almas` : `Invocar por ${price} Almas`}
+            </button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+
 async function fetchProducts() {
     try {
-        // MOCK DATA INICIAL (Fallback)
-        const mockProducts = [
-            { id: 101, name: "Máscara de la Peste", price: 25.00, type: "items", image_url: "Images/mask.png", description: "Protégete de las miasmas." },
-            { id: 102, name: "Vial de Sangre Falsa", price: 8.50, type: "potions", image_url: "Images/blood.png", description: "Realista y comestible." },
-            { id: 103, name: "Capa de Vampiro", price: 45.00, type: "items", image_url: "Images/cape.png", description: "Terciopelo negro genuino." },
-            { id: 104, name: "Elixir de Vida (Bebida)", price: 5.00, type: "potions", image_url: "Images/elixir.png", description: "Recupera energía vital." },
-            { id: 105, name: "Muñeco Vudú", price: 15.66, type: "items", image_url: "Images/voodoo.png", description: "Alfileres incluidos." }
-        ];
-
-        // Intentar fetch real con timeout corto
+        // Intentar fetch real con timeout más largo para dar tiempo al backend
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         try {
             const res = await fetch(`${API_URL}/products/`, { signal: controller.signal });
             clearTimeout(timeoutId);
+            
             if (res.ok) {
-                allProducts = await res.json();
+                const products = await res.json();
+                // Filtrar solo productos activos y visibles
+                allProducts = products.filter(p => p.is_active !== false && p.is_visible !== false);
             } else {
-                allProducts = mockProducts;
+                console.warn("Error del servidor al cargar productos:", res.status);
+                allProducts = [];
             }
         } catch (e) {
-            allProducts = mockProducts; // Fallback a mock si falla fetch o timeout
+            console.warn("Error de red al cargar productos:", e.message);
+            allProducts = [];
         }
 
         renderStore(allProducts);
 
     } catch (err) {
         console.warn("Error cargando productos", err);
+        allProducts = [];
+        renderStore(allProducts);
     }
 }
 
@@ -307,24 +397,55 @@ function renderStore(products) {
     grid.innerHTML = '';
 
     if (products.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">El vacío absoluto...</p>';
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p style="font-size: 1.2rem; color: #888;">🔮 No hay productos disponibles en este momento.</p>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                    Verifica que el servidor esté activo o contacta al administrador.
+                </p>
+            </div>
+        `;
         return;
     }
 
-    products.forEach(p => {
-        if (p.type === 'ticket') return;
+    // Filtrar tickets (se venden en otra sección)
+    const storeProducts = products.filter(p => p.type !== 'ticket');
+    
+    if (storeProducts.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Solo hay tickets disponibles. Visita la sección de entradas.</p>';
+        return;
+    }
+
+    storeProducts.forEach(p => {
+        // Determinar el icono según el tipo
+        const typeIcons = {
+            'merchandise': '🎃',
+            'item': '🔮',
+            'items': '🔮',
+            'drink': '🍹',
+            'food': '🍕',
+            'potion': '⚗️',
+            'potions': '⚗️',
+            'experience': '✨'
+        };
+        const icon = typeIcons[p.type] || '🔮';
+
+        // Determinar la imagen o usar icono como fallback
+        const imageContent = p.image_url 
+            ? `<img src="${p.image_url}" alt="${p.name}" style="max-width: 100%; max-height: 120px; object-fit: contain;" onerror="this.outerHTML='<span style=\\'font-size: 4rem;\\'>${icon}</span>'">`
+            : `<span style="font-size: 4rem;">${icon}</span>`;
 
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
             <div class="product-image-container">
-                <span style="font-size: 4rem;">🔮</span> 
+                ${imageContent}
             </div>
             <div class="product-info">
                 <h3>${p.name}</h3>
                 <p style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">${p.description || 'Objeto misterioso'}</p>
                 <div class="product-price">👻 ${Math.floor(p.price * 100)}</div>
-                <button class="add-to-cart-btn" onclick="addToCart('${p.name}', ${Math.floor(p.price * 100)}, ${p.id})">Obtener por ${Math.floor(p.price * 100)}</button>
+                <button class="add-to-cart-btn" onclick="addToCart('${p.name.replace(/'/g, "\\'")}', ${Math.floor(p.price * 100)}, ${p.id})">Obtener por ${Math.floor(p.price * 100)}</button>
             </div>
         `;
         grid.appendChild(card);
@@ -339,9 +460,20 @@ function filterStore(type) {
         renderStore(allProducts);
     } else {
         const filtered = allProducts.filter(p => {
-            if (type === 'items') return p.type === 'items' || p.type === 'item';
-            if (type === 'potions') return p.type === 'potions';
-            return false;
+            // Mapear tipos del frontend a tipos del backend
+            if (type === 'items' || type === 'merchandise') {
+                return p.type === 'items' || p.type === 'item' || p.type === 'merchandise';
+            }
+            if (type === 'potions' || type === 'drink') {
+                return p.type === 'potions' || p.type === 'potion' || p.type === 'drink';
+            }
+            if (type === 'food') {
+                return p.type === 'food';
+            }
+            if (type === 'experience') {
+                return p.type === 'experience';
+            }
+            return p.type === type;
         });
         renderStore(filtered);
     }

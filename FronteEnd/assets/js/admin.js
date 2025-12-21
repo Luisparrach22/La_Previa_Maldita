@@ -103,7 +103,8 @@ function switchSection(sectionId) {
     const titles = {
         'dashboard': { title: 'Dashboard', subtitle: 'Vista general del sistema' },
         'users': { title: 'Usuarios', subtitle: 'Gestión de usuarios registrados' },
-        'products': { title: 'Productos', subtitle: 'Gestión del catálogo de productos' },
+        'entradas': { title: 'Entradas', subtitle: 'Gestión de tickets y pases de acceso' },
+        'products': { title: 'Productos', subtitle: 'Gestión de merchandise, bebidas y comida' },
         'orders': { title: 'Pedidos', subtitle: 'Gestión de pedidos y ventas' },
         'events': { title: 'Eventos', subtitle: 'Gestión de eventos' },
         'tickets': { title: 'Validar Tickets', subtitle: 'Verificar y marcar tickets como usados' }
@@ -116,6 +117,7 @@ function switchSection(sectionId) {
     switch (sectionId) {
         case 'dashboard': loadDashboardData(); break;
         case 'users': loadUsers(); break;
+        case 'entradas': loadEntradas(); break;
         case 'products': loadProducts(); break;
         case 'orders': loadOrders(); break;
         case 'events': loadEvents(); break;
@@ -488,24 +490,220 @@ async function deleteUser(userId) {
 }
 
 // ============================================================================
-// PRODUCTS MANAGEMENT
+// ENTRADAS (TICKETS) MANAGEMENT
+// ============================================================================
+
+let entradasCache = [];
+
+async function loadEntradas() {
+    const tbody = document.getElementById('entradasTableBody');
+    
+    if (!tbody) {
+        console.error('❌ ERROR: No se encontró el elemento entradasTableBody');
+        return;
+    }
+    
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Cargando entradas...</td></tr>';
+    
+    console.log('🎫 Cargando entradas desde el backend...');
+
+    try {
+        const res = await fetch(`${API_URL}/products/admin/all`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+
+        console.log('📡 Respuesta del servidor:', res.status);
+
+        if (res.ok) {
+            const allProducts = await res.json();
+            console.log('📦 Total de productos recibidos:', allProducts.length);
+            
+            // Filtrar solo tickets
+            entradasCache = allProducts.filter(p => p.type === 'ticket');
+            console.log('🎟️ Tickets filtrados:', entradasCache.length);
+            console.log('🎟️ Tickets:', entradasCache);
+            
+            renderEntradasTable(entradasCache);
+        } else {
+            const errorText = await res.text();
+            console.error('❌ Error del servidor:', errorText);
+            throw new Error('Error al cargar entradas');
+        }
+    } catch (e) {
+        console.error('❌ Error cargando entradas:', e);
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">Error al cargar entradas. Revisa la consola (F12) para más detalles.</td></tr>';
+    }
+}
+
+function renderEntradasTable(entradas) {
+    console.log('🎨 Renderizando tabla de entradas...', entradas.length, 'entradas');
+    const tbody = document.getElementById('entradasTableBody');
+
+    if (entradas.length === 0) {
+        console.log('⚠️ No hay entradas para mostrar');
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">No hay entradas. Crea una nueva.</td></tr>';
+        return;
+    }
+
+    const ticketTypeNames = {
+        'general': 'General',
+        'vip': 'VIP',
+        'premium': 'Premium',
+        'early_bird': 'Early Bird'
+    };
+
+    tbody.innerHTML = entradas.map(entrada => `
+        <tr>
+            <td>${entrada.id}</td>
+            <td><strong>${entrada.name}</strong></td>
+            <td><span class="status-badge ${entrada.ticket_type || 'general'}">${ticketTypeNames[entrada.ticket_type] || entrada.ticket_type || 'General'}</span></td>
+            <td>€${parseFloat(entrada.price).toFixed(2)}</td>
+            <td>${entrada.stock}</td>
+            <td>${entrada.event_id ? 'Evento #' + entrada.event_id : 'Sin evento'}</td>
+            <td><span class="status-badge ${entrada.is_active ? 'active' : 'inactive'}">${entrada.is_active ? 'Activo' : 'Inactivo'}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-icon edit" onclick="editEntrada(${entrada.id})" title="Editar">✏️</button>
+                    <button class="btn-icon delete" onclick="deleteEntrada(${entrada.id})" title="Eliminar">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Tabla de entradas renderizada correctamente');
+}
+
+function filterEntradas() {
+    const search = document.getElementById('searchEntradas').value.toLowerCase();
+    const filtered = entradasCache.filter(e => e.name.toLowerCase().includes(search));
+    renderEntradasTable(filtered);
+}
+
+function openEntradaModal(entradaId = null) {
+    document.getElementById('entradaModal').classList.remove('hidden');
+    document.getElementById('entradaForm').reset();
+    document.getElementById('entradaId').value = '';
+    document.getElementById('entradaModalTitle').textContent = 'Nueva Entrada';
+    document.getElementById('entradaStock').value = '100';
+    document.getElementById('entradaCategory').value = 'entrada';
+
+    if (entradaId) {
+        const entrada = entradasCache.find(e => e.id === entradaId);
+        if (entrada) {
+            document.getElementById('entradaModalTitle').textContent = 'Editar Entrada';
+            document.getElementById('entradaId').value = entrada.id;
+            document.getElementById('entradaName').value = entrada.name;
+            document.getElementById('entradaDescription').value = entrada.description || '';
+            document.getElementById('entradaTicketType').value = entrada.ticket_type || 'general';
+            document.getElementById('entradaCategory').value = entrada.category || 'entrada';
+            document.getElementById('entradaPrice').value = entrada.price;
+            document.getElementById('entradaStock').value = entrada.stock;
+            document.getElementById('entradaImage').value = entrada.image_url || '';
+            document.getElementById('entradaActive').value = entrada.is_active ? 'true' : 'false';
+            document.getElementById('entradaFeatured').value = entrada.is_featured ? 'true' : 'false';
+            
+            // Mostrar vista previa de imagen si existe
+            if (entrada.image_url) {
+                setTimeout(() => previewEntradaImage(), 100);
+            }
+        }
+    }
+}
+
+function closeEntradaModal() {
+    document.getElementById('entradaModal').classList.add('hidden');
+}
+
+function editEntrada(entradaId) {
+    openEntradaModal(entradaId);
+}
+
+async function saveEntrada(event) {
+    event.preventDefault();
+
+    const entradaId = document.getElementById('entradaId').value;
+    const payload = {
+        name: document.getElementById('entradaName').value,
+        description: document.getElementById('entradaDescription').value || null,
+        type: 'ticket', // Siempre es ticket
+        ticket_type: document.getElementById('entradaTicketType').value,
+        category: document.getElementById('entradaCategory').value || 'entrada',
+        price: parseFloat(document.getElementById('entradaPrice').value),
+        stock: parseInt(document.getElementById('entradaStock').value),
+        image_url: document.getElementById('entradaImage').value || null,
+        is_active: document.getElementById('entradaActive').value === 'true',
+        is_featured: document.getElementById('entradaFeatured').value === 'true'
+    };
+
+    try {
+        const url = entradaId ? `${API_URL}/products/${entradaId}` : `${API_URL}/products/`;
+        const method = entradaId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            showNotification(entradaId ? '✅ Entrada actualizada' : '✅ Entrada creada', 'success');
+            closeEntradaModal();
+            loadEntradas();
+        } else {
+            const err = await res.json();
+            alert('❌ Error: ' + (err.detail || 'No se pudo guardar'));
+        }
+    } catch (e) {
+        alert('❌ Error de conexión');
+    }
+}
+
+async function deleteEntrada(entradaId) {
+    if (!confirm('¿Estás seguro de eliminar esta entrada? Los tickets vendidos seguirán siendo válidos.')) return;
+
+    try {
+        const res = await fetch(`${API_URL}/products/${entradaId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+
+        if (res.ok) {
+            showNotification('✅ Entrada eliminada', 'success');
+            loadEntradas();
+        } else {
+            alert('❌ No se pudo eliminar la entrada');
+        }
+    } catch (e) {
+        alert('❌ Error de conexión');
+    }
+}
+
+// ============================================================================
+// PRODUCTS MANAGEMENT (Merchandise, Bebidas, Comida - NO Tickets)
 // ============================================================================
 
 async function loadProducts() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" class="loading">Cargando productos...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Cargando productos...</td></tr>';
 
     try {
-        const res = await fetch(`${API_URL}/products/`);
+        const res = await fetch(`${API_URL}/products/admin/all`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
 
         if (res.ok) {
-            productsCache = await res.json();
+            const allProducts = await res.json();
+            // Filtrar solo productos que NO son tickets
+            productsCache = allProducts.filter(p => p.type !== 'ticket');
             renderProductsTable(productsCache);
         } else {
             throw new Error('Error al cargar productos');
         }
     } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">Error al cargar productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">Error al cargar productos</td></tr>';
     }
 }
 
@@ -513,15 +711,23 @@ function renderProductsTable(products) {
     const tbody = document.getElementById('productsTableBody');
 
     if (products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">No hay productos. Crea uno nuevo.</td></tr>';
         return;
     }
+
+    const typeNames = {
+        'merchandise': 'Merchandise',
+        'drink': 'Bebida',
+        'food': 'Comida',
+        'experience': 'Experiencia'
+    };
 
     tbody.innerHTML = products.map(product => `
         <tr>
             <td>${product.id}</td>
             <td><strong>${product.name}</strong></td>
-            <td><span class="status-badge ${product.type}">${product.type}</span></td>
+            <td><span class="status-badge ${product.type}">${typeNames[product.type] || product.type}</span></td>
+            <td>${product.category || '-'}</td>
             <td>€${parseFloat(product.price).toFixed(2)}</td>
             <td>${product.stock}</td>
             <td><span class="status-badge ${product.is_active ? 'active' : 'inactive'}">${product.is_active ? 'Activo' : 'Inactivo'}</span></td>
@@ -972,6 +1178,27 @@ async function markTicketAsUsed(ticketCode) {
     } catch (e) {
         console.error("Error marcando ticket:", e);
         showNotification('❌ Error de conexión', 'error');
+    }
+}
+
+// ============================================================================
+// IMAGE PREVIEW HELPER
+// ============================================================================
+function previewEntradaImage() {
+    const imageUrl = document.getElementById('entradaImage').value;
+    const previewContainer = document.getElementById('entradaImagePreview');
+    const previewImg = document.getElementById('entradaImagePreviewImg');
+    
+    if (imageUrl && imageUrl.trim() !== '') {
+        previewImg.src = imageUrl;
+        previewContainer.style.display = 'block';
+        
+        // Manejar error de carga de imagen
+        previewImg.onerror = function() {
+            previewContainer.style.display = 'none';
+        };
+    } else {
+        previewContainer.style.display = 'none';
     }
 }
 

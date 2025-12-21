@@ -86,6 +86,20 @@ def read_product(product_id: int, db: Session = Depends(database.get_db)):
 # ADMIN ENDPOINTS - CRUD COMPLETO
 # ============================================================================
 
+@router.get("/admin/all", response_model=List[schemas.ProductResponse])
+def read_all_products_admin(
+    skip: int = Query(0, ge=0, description="Número de productos a saltar"),
+    limit: int = Query(100, ge=1, le=500, description="Número máximo de productos a retornar"),
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Obtener TODOS los productos (incluyendo inactivos). **Solo administradores.**
+    
+    Este endpoint es para el panel de administración.
+    """
+    return crud.get_products(db, skip=skip, limit=limit, include_inactive=True)
+
 @router.post("/", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(
     product: schemas.ProductCreate,

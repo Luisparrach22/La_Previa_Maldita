@@ -101,19 +101,26 @@ def get_product(db: Session, product_id: int) -> Optional[models.Product]:
     """Obtener producto por ID"""
     return db.query(models.Product).filter(models.Product.id == product_id).first()
 
-def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[models.Product]:
-    """Obtener lista de productos con paginación"""
-    return db.query(models.Product).offset(skip).limit(limit).all()
+def get_products(db: Session, skip: int = 0, limit: int = 100, include_inactive: bool = False) -> List[models.Product]:
+    """Obtener lista de productos con paginación (solo activos por defecto)"""
+    query = db.query(models.Product)
+    if not include_inactive:
+        query = query.filter(models.Product.is_active == True)
+    return query.offset(skip).limit(limit).all()
 
-def get_products_by_type(db: Session, product_type: str, skip: int = 0, limit: int = 100) -> List[models.Product]:
-    """Obtener productos filtrados por tipo"""
-    return db.query(models.Product).filter(
-        models.Product.type == product_type
-    ).offset(skip).limit(limit).all()
+def get_products_by_type(db: Session, product_type: str, skip: int = 0, limit: int = 100, include_inactive: bool = False) -> List[models.Product]:
+    """Obtener productos filtrados por tipo (solo activos por defecto)"""
+    query = db.query(models.Product).filter(models.Product.type == product_type)
+    if not include_inactive:
+        query = query.filter(models.Product.is_active == True)
+    return query.offset(skip).limit(limit).all()
 
-def get_products_count(db: Session) -> int:
+def get_products_count(db: Session, include_inactive: bool = False) -> int:
     """Obtener el total de productos"""
-    return db.query(models.Product).count()
+    query = db.query(models.Product)
+    if not include_inactive:
+        query = query.filter(models.Product.is_active == True)
+    return query.count()
 
 def create_product(db: Session, product: schemas.ProductCreate) -> models.Product:
     """Crear nuevo producto"""
