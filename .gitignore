@@ -5,6 +5,7 @@
 # ============================================================================
 # SISTEMA OPERATIVO
 # ============================================================================
+**/.DS_Store
 .DS_Store
 .DS_Store?
 ._*
@@ -19,6 +20,7 @@ Thumbs.db
 # ============================================================================
 # PYTHON / BACKEND
 # ============================================================================
+**/__pycache__/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -41,12 +43,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-*.manifest
-*.spec
-
-# Instaladores
-pip-log.txt
-pip-delete-this-directory.txt
 
 # Entornos virtuales
 venv/
@@ -56,13 +52,6 @@ env/
 ENV/
 env.bak/
 venv.bak/
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Cython debug symbols
-cython_debug/
 
 # Pytest / Coverage
 htmlcov/
@@ -78,21 +67,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
 
 # ============================================================================
 # VARIABLES DE ENTORNO (MUY IMPORTANTE - NO SUBIR)
@@ -112,27 +86,23 @@ dmypy.json
 *.sql.bz2
 
 # ============================================================================
-# NODE.JS / FRONTEND
+# LOGS Y TEMPORALES (IMPORTANTE - NO SUBIR)
 # ============================================================================
-node_modules/
+logs/
+*.log
+server.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-lerna-debug.log*
-.npm
-.eslintcache
-.stylelintcache
-*.tsbuildinfo
+pids/
+*.pid
+*.seed
+*.pid.lock
 
-# Build outputs
-dist/
-build/
-out/
-.next/
-.nuxt/
-.cache/
-.parcel-cache/
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+*.backup
 
 # ============================================================================
 # IDEs Y EDITORES
@@ -144,26 +114,20 @@ out/
 *.code-workspace
 
 # ============================================================================
-# LOGS Y TEMPORALES
+# NODE.JS / FRONTEND
 # ============================================================================
-logs/
-*.log
-npm-debug.log*
-pids/
-*.pid
-*.seed
-*.pid.lock
-lib-cov/
-.grunt/
-bower_components/
-.lock-wscript
-.nyc_output/
-
-# Archivos temporales
-*.tmp
-*.temp
-*.bak
-*.backup
+node_modules/
+.npm
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
 
 # ============================================================================
 # CERTIFICADOS Y CLAVES (NUNCA SUBIR)
@@ -177,21 +141,14 @@ secrets/
 credentials/
 
 # ============================================================================
-# ARCHIVOS GRANDES / MEDIA (OPCIONAL)
+# UPLOADS Y ARCHIVOS DE USUARIO
 # ============================================================================
-# Descomenta si no quieres subir videos pesados
-# FronteEnd/Videos/*.mp4
-# *.mp4
-# *.mov
-# *.avi
+BackEnd/app/static/uploads/*
+!BackEnd/app/static/uploads/.gitkeep
 
 # ============================================================================
 # ESPECÍFICOS DEL PROYECTO
 # ============================================================================
-# Script de desarrollo (opcional mantenerlo)
-# start_dev.sh
-
-# Archivos de configuración local
 *.local.json
 *.local.yaml
 config.local.*
