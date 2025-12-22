@@ -1,312 +1,238 @@
 # 🎃 La Previa Maldita
 
 <div align="center">
-  
-  ![Estado del Proyecto](https://img.shields.io/badge/Estado-Producción-success?style=for-the-badge)
-  ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)
-  ![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-  ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-  ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
-**Come, bebe y grita.**  
- _Plataforma web full-stack para la gestión de eventos de terror con sistema de gamificación._
+![Header](https://img.shields.io/badge/🍷-Come,%20Bebe%20y%20Grita-8B0000?style=for-the-badge)
 
-[Demo en Vivo](#) • [Documentación](#) • [Reporte de Bugs](https://github.com/Luisparrach22/La_Previa_Maldita/issues)
+**Plataforma Full-Stack de Gestión de Eventos de Terror**
+
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![License](https://img.shields.io/badge/License-MIT-success?style=flat-square)](LICENSE)
+
+[Demo](#-inicio-rápido) • [Características](#-características) • [Stack](#️-tecnologías)
 
 </div>
 
 ---
 
-## 📖 Descripción
+## 🎯 Descripción
 
-**La Previa Maldita** es una aplicación web completa diseñada para "Terror en el Campus", que combina una experiencia de usuario inmersiva con un sistema robusto de backend. Los usuarios pueden:
-
-- 🎟️ Comprar entradas y productos con **"Almas"** (moneda virtual)
-- 🎮 Jugar minijuegos para ganar puntos
-- 👤 Gestionar su perfil y pedidos
-- 👨‍💼 (Admin) Administrar usuarios, productos y validar tickets
+Sistema completo de gestión de eventos con **economía virtual**, **gamificación** y **panel administrativo**. Los usuarios pueden comprar tickets, jugar minijuegos para ganar "Almas" (puntos) y competir en el leaderboard.
 
 ---
 
 ## ✨ Características
 
+<table>
+<tr>
+<td width="50%">
+
 ### 🛒 Sistema de Comercio
 
-- **Tienda Dinámica**: Productos cargados desde base de datos
-- **Economía de Almas**: Sistema de puntos integrado
-- **Compras en Tiempo Real**: Sincronización instantánea con el admin
+- 💰 Economía de "Almas" (moneda virtual)
+- 🎟️ Compra de tickets y productos
+- 📦 Gestión de pedidos en tiempo real
+- 🖼️ Carga de imágenes desde dispositivo
+
+</td>
+<td width="50%">
 
 ### 🎮 Gamificación
 
-- **3 Minijuegos Mortales**:
-  - 🔨 **Caza-Espectros**: Estilo Whack-a-Mole
-  - 🧠 **Trivia Terror**: Preguntas de cine de horror
-  - 🃏 **Memoria Letal**: Encuentra las parejas
-- **Sistema de Puntuación**: Los puntos se convierten en Almas
+- 🔨 **Caza-Espectros**: Whack-a-Mole
+- 🧠 **Trivia Terror**: Quiz de horror
+- 🃏 **Memoria Letal**: Memory Game
+- 🏆 Sistema de puntuación global
 
-### 🔐 Autenticación Segura
+</td>
+</tr>
+<tr>
+<td width="50%">
 
-- JWT (JSON Web Tokens)
-- OAuth con Google
-- Roles de usuario (User/Admin/VIP)
+### 🔐 Autenticación
 
-### 👨‍💼 Panel de Administración
+- 🔑 JWT Token seguro
+- 👤 Registro/Login completo
+- 🌐 OAuth con Google
+- 👥 Roles (User/Admin/VIP)
 
-- Dashboard con estadísticas en tiempo real
-- CRUD completo de usuarios, productos y pedidos
-- Validación de tickets con código QR
-- Carga de imágenes desde dispositivo
+</td>
+<td width="50%">
+
+### 👨‍💼 Panel Admin
+
+- 📊 Dashboard con estadísticas
+- 👥 Gestión de usuarios
+- 📦 Control de productos/pedidos
+- ✅ Validación de tickets QR
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Prerrequisitos
-
-- **Python 3.9+** ([Descargar](https://www.python.org/downloads/))
-- **MySQL 8.0+** ([Descargar](https://dev.mysql.com/downloads/mysql/))
-- **Git** ([Descargar](https://git-scm.com/downloads))
-
-### Instalación en 3 Pasos
+### Instalación Automática (Recomendado)
 
 ```bash
-# 1. Clonar el repositorio
+# 1. Clonar repositorio
 git clone https://github.com/Luisparrach22/La_Previa_Maldita.git
 cd La_Previa_Maldita
 
-# 2. Ejecutar configuración automática
+# 2. Ejecutar setup automático
 ./setup.sh
 
-# 3. Iniciar la aplicación
+# 3. Crear base de datos
+mysql -u root -p -e "CREATE DATABASE la_previa_db;"
+
+# 4. Iniciar aplicación
 ./start_dev.sh
 ```
 
-**¡Listo!** La aplicación estará disponible en:
+### Acceso
 
 - 🌐 **Frontend**: http://localhost:5500
-- 📡 **API**: http://localhost:8000
-- 📚 **Documentación API**: http://localhost:8000/docs
-- 👨‍💼 **Panel Admin**: http://localhost:5500/pages/admin.html
+- 📡 **API REST**: http://localhost:8000
+- 📚 **Documentación**: http://localhost:8000/docs
+- 👨‍💼 **Admin Panel**: http://localhost:5500/pages/admin.html
 
-### Configuración de Base de Datos
+### Usuarios de Prueba
 
-Después de ejecutar `./setup.sh`, edita el archivo `BackEnd/.env`:
+| Rol        | Email            | Contraseña    |
+| ---------- | ---------------- | ------------- |
+| 👤 Usuario | `user@test.com`  | `password123` |
+| 👨‍💼 Admin   | `admin@test.com` | `admin123`    |
 
-```env
-DATABASE_URL=mysql+pymysql://TU_USUARIO:TU_CONTRASEÑA@localhost:3306/la_previa_db
-SECRET_KEY=generada_automaticamente
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+---
+
+## 🏗️ Arquitectura
+
 ```
-
-Luego crea la base de datos:
-
-```bash
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS la_previa_db;"
+┌─────────────────────────────────────────────────────────┐
+│                     FRONTEND (Client)                   │
+│  HTML5 + CSS3 + JavaScript ES6+ │ Fetch API             │
+└─────────────────┬───────────────────────────────────────┘
+                  │ REST API (JWT Auth)
+┌─────────────────▼───────────────────────────────────────┐
+│                  BACKEND (FastAPI)                      │
+│  Python 3.9+ │ Pydantic │ SQLAlchemy ORM                │
+└─────────────────┬───────────────────────────────────────┘
+                  │ SQL Queries
+┌─────────────────▼───────────────────────────────────────┐
+│              DATABASE (MySQL 8.0)                       │
+│  Users │ Products │ Orders │ Scores │ Sessions          │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🏗️ Estructura del Proyecto
-
-```
-La_Previa_Maldita/
-├── 📁 BackEnd/                 # API REST (FastAPI)
-│   ├── 📁 app/
-│   │   ├── 📁 routers/         # Endpoints
-│   │   │   ├── games.py        # Sistema de juegos
-│   │   │   ├── orders.py       # Pedidos y tickets
-│   │   │   ├── products.py     # Tienda y catálogo
-│   │   │   └── user.py         # Autenticación
-│   │   ├── 📁 static/uploads/  # Imágenes de productos
-│   │   ├── auth.py             # Seguridad y JWT
-│   │   ├── crud.py             # Operaciones de BD
-│   │   ├── database.py         # Conexión MySQL
-│   │   ├── dependencies.py     # Middlewares
-│   │   ├── main.py             # ⚙️  Servidor principal
-│   │   ├── models.py           # Modelos SQLAlchemy
-│   │   └── schemas.py          # Validación Pydantic
-│   ├── .env.example            # Plantilla de configuración
-│   └── requirements.txt        # Dependencias Python
-│
-├── 📁 FronteEnd/               # Cliente Web
-│   ├── 📁 assets/
-│   │   ├── 📁 css/             # Estilos temáticos
-│   │   ├── 📁 js/              # Lógica de cliente
-│   │   ├── 📁 images/          # Assets gráficos
-│   │   └── 📁 videos/          # Multimedia
-│   ├── 📁 pages/
-│   │   ├── admin.html          # Panel de administración
-│   │   └── user_page.html      # Dashboard de usuario
-│   └── index.html              # 🏠 Página principal
-│
-├── 📄 setup.sh                 # Configuración automática
-├── 📄 start_dev.sh             # Iniciar aplicación
-├── 📄 stop.sh                  # Detener servidores
-└── 📄 README.md                # Esta documentación
-```
-
----
-
-## 🛠️ Stack Tecnológico
+## 🛠️ Tecnologías
 
 ### Backend
 
-| Tecnología     | Versión | Propósito                |
-| -------------- | ------- | ------------------------ |
-| **Python**     | 3.9+    | Lenguaje principal       |
-| **FastAPI**    | 0.104+  | Framework web asíncrono  |
-| **SQLAlchemy** | 2.0+    | ORM para base de datos   |
-| **MySQL**      | 8.0+    | Sistema de gestión de BD |
-| **Pydantic**   | 2.0+    | Validación de datos      |
-| **JWT**        | -       | Autenticación segura     |
-| **Uvicorn**    | -       | Servidor ASGI            |
+- **FastAPI** - Framework web asíncrono de alto rendimiento
+- **SQLAlchemy** - ORM para gestión de base de datos
+- **MySQL** - Sistema de gestión de base de datos
+- **JWT** - Autenticación segura basada en tokens
+- **Pydantic** - Validación de datos y schemas
 
 ### Frontend
 
-| Tecnología            | Propósito                       |
-| --------------------- | ------------------------------- |
-| **HTML5**             | Estructura semántica            |
-| **CSS3**              | Diseño responsive y animaciones |
-| **JavaScript (ES6+)** | Lógica de cliente y DOM         |
-| **Fetch API**         | Comunicación con backend        |
+- **HTML5/CSS3** - Estructura y diseño responsive
+- **JavaScript ES6+** - Lógica de cliente y manipulación DOM
+- **Fetch API** - Comunicación asíncrona con backend
 
 ---
 
-## 📚 API Endpoints
+## � Estructura del Proyecto
 
-### Autenticación
-
-```http
-POST   /users/register          # Registrar nuevo usuario
-POST   /users/login             # Iniciar sesión (obtener JWT)
-GET    /users/me                # Obtener datos del usuario actual
-PUT    /users/me                # Actualizar perfil
 ```
-
-### Productos y Tienda
-
-```http
-GET    /products/               # Listar productos activos
-GET    /products/{id}           # Obtener producto específico
-POST   /products/upload/        # Subir imagen (Admin)
-POST   /products/               # Crear producto (Admin)
-PUT    /products/{id}           # Actualizar producto (Admin)
+La_Previa_Maldita/
+├── 📁 BackEnd/
+│   ├── app/
+│   │   ├── routers/          # Endpoints API
+│   │   ├── static/uploads/   # Imágenes de productos
+│   │   ├── main.py           # Servidor principal
+│   │   ├── models.py         # Modelos de BD
+│   │   └── schemas.py        # Validación Pydantic
+│   └── requirements.txt      # Dependencias Python
+│
+├── 📁 FronteEnd/
+│   ├── assets/
+│   │   ├── css/              # Estilos temáticos
+│   │   ├── js/               # Lógica de cliente
+│   │   └── images/           # Assets gráficos
+│   ├── pages/
+│   │   ├── admin.html        # Panel admin
+│   │   └── user_page.html    # Dashboard usuario
+│   └── index.html            # Página principal
+│
+├── setup.sh                  # Configuración automática
+├── start_dev.sh              # Iniciar aplicación
+└── stop.sh                   # Detener servidores
 ```
-
-### Pedidos
-
-```http
-POST   /orders/                 # Crear pedido (comprar)
-GET    /orders/my-orders        # Mis pedidos
-GET    /orders/{id}             # Detalle de pedido (Admin)
-```
-
-### Juegos
-
-```http
-POST   /games/score             # Enviar puntuación
-GET    /games/leaderboard       # Top puntuaciones
-GET    /games/my-scores         # Mis puntuaciones
-```
-
-📖 **Documentación interactiva completa**: http://localhost:8000/docs
 
 ---
 
-## 🎮 Usuarios de Prueba
+## 📋 Prerrequisitos
 
-### Usuario Normal
-
-```
-Email: user@test.com
-Contraseña: password123
-```
-
-### Administrador
-
-```
-Email: admin@test.com
-Contraseña: admin123
-```
+- Python 3.9+
+- MySQL 8.0+
+- Git
 
 ---
 
 ## 🔧 Comandos Útiles
 
 ```bash
-# Iniciar aplicación (ambos servidores)
+# Iniciar aplicación
 ./start_dev.sh
 
-# Detener todos los servidores
+# Detener servidores
 ./stop.sh
 
-# Solo Backend (desarrollo)
-cd BackEnd
-source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
-
-# Solo Frontend (desarrollo)
-cd FronteEnd
-python -m http.server 5500
-
-# Ver logs del servidor
-tail -f server.log
+# Ver documentación API
+open http://localhost:8000/docs
 ```
 
 ---
 
-## 🐛 Solución de Problemas
+## � Capturas
 
-### Error: "Connection refused" al conectar a MySQL
+### 🏠 Landing Page
 
-```bash
-# Verificar que MySQL esté corriendo
-sudo service mysql status  # Linux
-brew services list          # macOS
+Interface principal con diseño dark-horror themed, trailer integrado y sistema de registro.
 
-# Iniciar MySQL si está detenido
-sudo service mysql start    # Linux
-brew services start mysql   # macOS
-```
+### 🎮 Juegos
 
-### Error: "Module not found"
+Tres minijuegos interactivos donde los usuarios ganan "Almas" que se sincronizan con el backend.
 
-```bash
-# Reinstalar dependencias
-cd BackEnd
-source venv/bin/activate
-pip install -r requirements.txt
-```
+### 👨‍💼 Panel Admin
 
-### Puerto 5500 o 8000 ya en uso
-
-```bash
-# Ver qué proceso usa el puerto
-lsof -i :5500
-lsof -i :8000
-
-# Matar el proceso (reemplaza PID)
-kill -9 <PID>
-```
+Dashboard completo con gestión de usuarios, productos, pedidos y validación de tickets.
 
 ---
 
 ## 🤝 Contribución
 
-Las contribuciones son bienvenidas. Para cambios importantes:
+Las contribuciones son bienvenidas:
 
-1. **Fork** el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/MiFeature`)
-3. Haz commit de tus cambios (`git commit -m 'Añadir nueva feature'`)
-4. Push a la rama (`git push origin feature/MiFeature`)
-5. Abre un **Pull Request**
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-feature`)
+3. Commit cambios (`git commit -m 'Add: nueva feature'`)
+4. Push a la rama (`git push origin feature/nueva-feature`)
+5. Abre un Pull Request
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
 
 ---
 
@@ -314,14 +240,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **Luis Parrach**
 
-- GitHub: [@Luisparrach22](https://github.com/Luisparrach22)
-- Proyecto: [La Previa Maldita](https://github.com/Luisparrach22/La_Previa_Maldita)
-
----
-
-## 📞 Soporte
-
-¿Problemas o preguntas? Abre un [issue](https://github.com/Luisparrach22/La_Previa_Maldita/issues) o contacta al equipo.
+[![GitHub](https://img.shields.io/badge/GitHub-Luisparrach22-181717?style=flat-square&logo=github)](https://github.com/Luisparrach22)
 
 ---
 
@@ -329,6 +248,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **🎃 ¿Preparado para gritar?**
 
-Made with ❤️ and ☠️ in España
+Made with ❤️ and ☠️
 
 </div>
