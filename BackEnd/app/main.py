@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from .database import engine, Base, SessionLocal
 from .routers import user, products, games, orders
+import os
 
 
 # ============================================================================
@@ -76,6 +78,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Ensure static directory exists
+static_path = os.path.join(os.path.dirname(__file__), "static")
+if not os.path.exists(static_path):
+    os.makedirs(static_path)
+    
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 
 # ============================================================================

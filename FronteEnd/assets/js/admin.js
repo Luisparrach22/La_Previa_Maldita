@@ -794,6 +794,36 @@ async function saveProduct(event) {
     event.preventDefault();
 
     const productId = document.getElementById('productId').value;
+    let imageUrl = document.getElementById('productImage').value || null;
+    
+    // Handle File Upload
+    const fileInput = document.getElementById('productImageFile');
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const uploadRes = await fetch(`${API_URL}/products/upload/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`
+                },
+                body: formData
+            });
+            
+            if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                imageUrl = uploadData.url;
+            } else {
+                alert('⚠️ No se pudo subir la imagen. Se guardará sin ella (o con la URL antigua).');
+            }
+        } catch (e) {
+            console.error("Upload error", e);
+            alert('⚠️ Error al subir la imagen.');
+        }
+    }
+
     const payload = {
         name: document.getElementById('productName').value,
         description: document.getElementById('productDescription').value || null,
@@ -801,7 +831,7 @@ async function saveProduct(event) {
         category: document.getElementById('productCategory').value || null,
         price: parseFloat(document.getElementById('productPrice').value),
         stock: parseInt(document.getElementById('productStock').value),
-        image_url: document.getElementById('productImage').value || null,
+        image_url: imageUrl,
         is_active: document.getElementById('productActive').value === 'true',
         is_featured: document.getElementById('productFeatured').value === 'true'
     };

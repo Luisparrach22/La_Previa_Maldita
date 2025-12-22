@@ -49,7 +49,7 @@ def submit_score(
     # GAMIFICATION: Sumar puntos al saldo del usuario
     # ---------------------------------------------------------
     # Por simplicidad, 1 punto de score = 1 Alma
-    current_user.soul_balance += score.score_value
+    current_user.soul_balance += score.points
     db.commit()
     db.refresh(current_user)
     

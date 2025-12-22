@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import shutil
+import os
+import uuid
 from .. import schemas, crud, database, dependencies, models
 
 router = APIRouter(
@@ -9,6 +12,28 @@ router = APIRouter(
     responses={404: {"description": "No encontrado"}},
 )
 
+@router.post("/upload/", response_model=dict)
+async def upload_image(
+    file: UploadFile = File(...),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Subir una imagen de producto. Retorna la URL relativa.
+    """
+    UPLOAD_DIR = "app/static/uploads"
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+    
+    # Generate unique filename
+    file_extension = file.filename.split(".")[-1]
+    unique_filename = f"{uuid.uuid4()}.{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Return URL relative to server root
+    return {"url": f"http://localhost:8000/static/uploads/{unique_filename}"}
 
 # ============================================================================
 # PUBLIC ENDPOINTS
@@ -68,20 +93,6 @@ def get_products_count(db: Session = Depends(database.get_db)):
     return {"total": count}
 
 
-@router.get("/{product_id}", response_model=schemas.ProductResponse)
-def read_product(product_id: int, db: Session = Depends(database.get_db)):
-    """
-    Obtener información de un producto específico por ID.
-    """
-    db_product = crud.get_product(db, product_id=product_id)
-    if db_product is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Producto no encontrado"
-        )
-    return db_product
-
-
 # ============================================================================
 # ADMIN ENDPOINTS - CRUD COMPLETO
 # ============================================================================
@@ -99,6 +110,19 @@ def read_all_products_admin(
     Este endpoint es para el panel de administración.
     """
     return crud.get_products(db, skip=skip, limit=limit, include_inactive=True)
+
+@router.get("/{product_id}", response_model=schemas.ProductResponse)
+def read_product(product_id: int, db: Session = Depends(database.get_db)):
+    """
+    Obtener información de un producto específico por ID.
+    """
+    db_product = crud.get_product(db, product_id=product_id)
+    if db_product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Producto no encontrado"
+        )
+    return db_product
 
 @router.post("/", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(

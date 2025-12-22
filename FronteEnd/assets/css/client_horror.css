@@ -749,3 +749,192 @@ body {
     border-top-color: var(--bright-blood);
   }
 }
+
+/* ==================== SHOP PRODUCT CARDS ==================== */
+.product-card {
+    background: #0a0a0a;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: 0.3s;
+    border: 1px solid #222;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--blood-red);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.product-image-container {
+    height: 200px;
+    background: #151515;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image {
+    max-width: 100%;
+    max-height: 100%;
+    transition: 0.5s;
+    object-fit: cover;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.1);
+}
+
+.product-info {
+    padding: 20px;
+    text-align: left;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-info h3 {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    color: #fff;
+    font-family: "Nosifer", cursive;
+}
+
+.product-info .product-price {
+    color: var(--blood-red);
+    font-weight: bold;
+    font-size: 1.5rem;
+    font-family: "Creepster", cursive;
+    margin-top: 10px;
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: 0.2s;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-family: "Outfit", sans-serif;
+}
+
+.add-to-cart-btn:hover {
+    box-shadow: 0 0 15px var(--blood-red);
+    transform: scale(1.02);
+}
+
+/* ==================== SHOP GRID ==================== */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 25px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .shop-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 15px;
+    }
+}
+
+/* ==================== GAMES STYLES ==================== */
+/* Whack-a-Ghost */
+.whack-hole {
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 50%;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>'), crosshair;
+}
+
+.whack-ghost {
+    width: 80%;
+    height: 80%;
+    position: absolute;
+    top: 100%;
+    left: 10%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2a9 9 0 0 0-9 9v7c0 1.66 1.34 3 3 3h3v-8h6v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 0 0-9-9z"/><circle cx="9" cy="10" r="1.5" fill="black"/><circle cx="15" cy="10" r="1.5" fill="black"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: top 0.1s;
+}
+
+.whack-hole.up .whack-ghost {
+    top: 10%;
+}
+
+/* Trivia */
+.trivia-option {
+    background: #222;
+    color: white;
+    padding: 15px;
+    border: 1px solid #444;
+    cursor: pointer;
+    transition: 0.3s;
+    text-align: left;
+    border-radius: 8px;
+    font-size: 1.1rem;
+}
+
+.trivia-option:hover {
+    background: #333;
+    border-color: var(--blood-red);
+}
+
+.trivia-option.correct {
+    background: rgba(0, 255, 65, 0.2);
+    border-color: var(--spectral-green);
+}
+
+.trivia-option.wrong {
+    background: rgba(187, 10, 30, 0.2);
+    border-color: var(--blood-red);
+}
+
+/* Memory */
+.memory-card {
+    height: 100px;
+    background: #222;
+    border: 2px solid #444;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    transition: transform 0.3s;
+    user-select: none;
+}
+
+.memory-card:hover {
+    border-color: var(--bright-blood);
+}
+
+.memory-card .front {
+    display: none;
+}
+
+.memory-card.flipped {
+    background: #440000;
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .front {
+    display: block;
+}
+
+.memory-card.flipped .back {
+    display: none;
+}

@@ -60,6 +60,9 @@ function logoutUser() {
 }
 
 function switchTab(tabId) {
+    // Detener juegos si están activos
+    stopActiveGames();
+
     document.querySelectorAll('.dashboard-tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.dashboard-menu li').forEach(li => li.classList.remove('active'));
 
@@ -71,6 +74,303 @@ function switchTab(tabId) {
             item.classList.add('active');
         }
     });
+}
+
+
+
+/* ==================== GAMES LOGIC ==================== */
+
+// --- Game Navigation & Cleanup ---
+let activeGameInterval = null;
+let activeGameTimeout = null;
+
+function stopActiveGames() {
+    // Stop Whack-a-Ghost
+    clearInterval(activeGameInterval);
+    clearTimeout(activeGameTimeout);
+    timeUp = true;
+    
+    // Reset Views in Games Tab if needed
+    // But mainly stop the "engine" of the games
+}
+
+function showGame(gameId) {
+    stopActiveGames(); // Stop previous game loop
+    document.getElementById('game-intro').classList.add('hidden');
+    document.querySelectorAll('.game-view').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`game-${gameId}`).classList.remove('hidden');
+}
+
+// --- Submit Score helper ---
+async function submitScore(points, gameType) {
+    const token = localStorage.getItem('token');
+    try {
+        const payload = {
+            points: points,
+            game_type: gameType,
+            level_reached: 1,
+            time_played_seconds: 0,
+            device_type: "web"
+        };
+        
+        const res = await fetch(`${API_URL}/games/score`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            console.log("Puntaje guardado!");
+            checkSession(); // Refresh balance
+            
+            // Custom alert styling could be better, but standard is fine for now
+            alert(`☠️ ¡Ganaste ${points} Almas! Tu saldo ha aumentado.`);
+        } else {
+            console.warn("No se pudo guardar el puntaje");
+        }
+    } catch (e) {
+        console.error("Error submitting score", e);
+    }
+}
+
+// --- Whack-a-Ghost ---
+let scoreWhack = 0;
+let lastHole;
+let timeUp = false;
+
+function randomTime(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
+function randomHole(holes) {
+    const idx = Math.floor(Math.random() * holes.length);
+    const hole = holes[idx];
+    if (hole === lastHole) return randomHole(holes);
+    lastHole = hole;
+    return hole;
+}
+
+function peep() {
+    if (timeUp) return;
+    const holes = document.querySelectorAll('.whack-hole');
+    const time = randomTime(500, 1500); 
+    const hole = randomHole(holes);
+    if(!hole) return;
+    
+    hole.classList.add('up');
+    
+    activeGameTimeout = setTimeout(() => {
+        hole.classList.remove('up');
+        // Clean hit status for next time
+        const ghost = hole.querySelector('.whack-ghost');
+        if(ghost) {
+             ghost.style.filter = "";
+             ghost.dataset.hit = "";
+        }
+        if (!timeUp) peep();
+    }, time);
+}
+
+function startGameWhackLogic() {
+    stopActiveGames(); // Clear any existing timers
+    
+    const grid = document.getElementById('whack-grid');
+    grid.innerHTML = '';
+    for(let i=0; i<6; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'whack-hole';
+        const ghost = document.createElement('div');
+        ghost.className = 'whack-ghost';
+        
+        // Use mousedown/touchstart for better responsiveness
+        const hitHandler = function(e) {
+             if(!e.isTrusted) return; 
+             if(this.parentNode.classList.contains('up')) {
+                 if(!this.dataset.hit) {
+                    scoreWhack++;
+                    this.dataset.hit = "true";
+                    this.style.filter = "brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5)"; // blood effect
+                    document.getElementById('whack-score').textContent = scoreWhack;
+                    
+                    // Force down immediately after hit
+                    setTimeout(() => {
+                        this.parentNode.classList.remove('up');
+                    }, 150);
+                 }
+             }
+        };
+        
+        ghost.addEventListener('mousedown', hitHandler);
+        ghost.addEventListener('touchstart', hitHandler);
+        
+        hole.appendChild(ghost);
+        grid.appendChild(hole);
+    }
+
+    document.getElementById('whack-score').textContent = 0;
+    document.getElementById('whack-time').textContent = 15;
+    scoreWhack = 0;
+    timeUp = false;
+    document.getElementById('btn-start-whack').disabled = true;
+    
+    peep();
+    
+    let timeLeft = 15;
+    activeGameInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('whack-time').textContent = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(activeGameInterval);
+            timeUp = true;
+            document.getElementById('btn-start-whack').disabled = false;
+            // Clear grid state
+            document.querySelectorAll('.whack-hole').forEach(h => h.classList.remove('up'));
+            
+            if(scoreWhack > 0) {
+                setTimeout(() => submitScore(scoreWhack, 'ghost_hunt'), 500);
+            }
+        }
+    }, 1000);
+}
+
+function startWhackGame() {
+    startGameWhackLogic();
+}
+
+// --- Trivia Terror ---
+const triviaQuestions = [
+    { q: "¿Quién es el asesino en 'Halloween'?", a: ["Jason Voorhees", "Freddy Krueger", "Michael Myers", "Leatherface"], correct: 2 },
+    { q: "¿En qué año se estrenó 'El Exorcista'?", a: ["1973", "1980", "1968", "1990"], correct: 0 },
+    { q: "¿Qué hotel aparece en 'El Resplandor'?", a: ["Bates Motel", "Overlook Hotel", "Cecil Hotel", "Hotel California"], correct: 1 },
+    { q: "¿Qué muñeco poseído aterrorizó al mundo?", a: ["Chucky", "Annabelle", "Billy", "Brahms"], correct: 0 },
+    { q: "¿Cómo se llama el payaso de 'IT'?", a: ["Pennywise", "Joker", "Pogo", "Twisty"], correct: 0 },
+    { q: "¿Cuál es la regla #1 para sobrevivir en Zombieland?", a: ["Cardio", "Doble Tap", "Cinturón de seguridad", "Viajar ligero"], correct: 0 },
+    { q: "¿Qué película popularizó el metraje encontrado (found footage)?", a: ["REC", "Paranormal Activity", "The Blair Witch Project", "Cloverfield"], correct: 2 }
+];
+
+function startTriviaGame() {
+    document.getElementById('trivia-start-screen').classList.add('hidden');
+    document.getElementById('trivia-play-screen').classList.remove('hidden');
+    nextQuestion();
+}
+
+function nextQuestion() {
+    const qIndex = Math.floor(Math.random() * triviaQuestions.length);
+    const q = triviaQuestions[qIndex];
+    
+    document.getElementById('trivia-question').textContent = q.q;
+    const opts = document.getElementById('trivia-options');
+    opts.innerHTML = '';
+    
+    q.a.forEach((ans, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'trivia-option';
+        btn.textContent = ans;
+        btn.onclick = () => checkTrivia(btn, idx, q.correct);
+        opts.appendChild(btn);
+    });
+}
+
+function checkTrivia(btn, idx, correctIdx) {
+    if(document.querySelector('.trivia-option.correct') || document.querySelector('.trivia-option.wrong')) return; 
+
+    if(idx === correctIdx) {
+        btn.classList.add('correct');
+        setTimeout(() => {
+            submitScore(5, 'trivia');
+            document.getElementById('trivia-play-screen').classList.add('hidden');
+            document.getElementById('trivia-start-screen').classList.remove('hidden');
+            document.querySelector('#trivia-start-screen h3').innerHTML = "¡Correcto!<br>Ganaste 5 Almas.";
+        }, 1500);
+    } else {
+        btn.classList.add('wrong');
+        const allOpts = document.querySelectorAll('.trivia-option');
+        allOpts[correctIdx].classList.add('correct');
+        setTimeout(() => {
+            document.getElementById('trivia-play-screen').classList.add('hidden');
+            document.getElementById('trivia-start-screen').classList.remove('hidden');
+            document.querySelector('#trivia-start-screen h3').innerHTML = "Fallaste.<br>Tu alma sufre.";
+        }, 1500);
+    }
+}
+
+// --- Memory ---
+const memoryIcons = ['💀', '🧛', '🧟', '👻', '🕸️', '⚰️', '🩸', '🎃'];
+let memoryCards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let moves = 0;
+let lockBoard = false;
+
+function startMemoryGame() {
+    const grid = document.getElementById('memory-grid');
+    grid.innerHTML = '';
+    
+    // Reset State
+    flippedCards = [];
+    matchedPairs = 0;
+    moves = 0;
+    lockBoard = false;
+    
+    memoryCards = [...memoryIcons, ...memoryIcons]; 
+    memoryCards.sort(() => 0.5 - Math.random());
+    
+    document.getElementById('memory-moves').textContent = moves;
+    
+    memoryCards.forEach((icon, index) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.index = index;
+        card.dataset.icon = icon;
+        card.innerHTML = `<span class="front">${icon}</span><span class="back" style="color: #666; font-size: 1.5rem;">🦇</span>`;
+        card.onclick = () => flipCard(card);
+        grid.appendChild(card);
+    });
+}
+
+function flipCard(card) {
+    if(lockBoard) return;
+    if(card === flippedCards[0]) return; // clicking same card
+    if(card.classList.contains('flipped')) return; // already matched/flipped
+    
+    card.classList.add('flipped');
+    flippedCards.push(card);
+    
+    if(flippedCards.length === 2) {
+        moves++;
+        document.getElementById('memory-moves').textContent = moves;
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    lockBoard = true;
+    const [c1, c2] = flippedCards;
+    
+    if(c1.dataset.icon === c2.dataset.icon) {
+        matchedPairs++;
+        flippedCards = [];
+        lockBoard = false; // unlock immediately
+        
+        if(matchedPairs === memoryIcons.length) {
+            setTimeout(() => {
+                const bonus = Math.max(0, 25 - moves); 
+                const points = 15 + bonus;
+                submitScore(points, 'memory');
+                alert(`¡Memoria Perfecta! Ganaste ${points} Almas.`);
+            }, 500);
+        }
+    } else {
+        setTimeout(() => {
+            c1.classList.remove('flipped');
+            c2.classList.remove('flipped');
+            flippedCards = [];
+            lockBoard = false;
+        }, 1000);
+    }
 }
 
 // ==========================================
@@ -100,6 +400,9 @@ async function loadDashboardData(token) {
 
     // Cargar mejor puntuación local
     document.getElementById('bestScore').textContent = localStorage.getItem('localHighScore') || "0";
+    
+    // Cargar Shop
+    loadShopData(token);
 }
 
 // ==========================================
@@ -289,5 +592,112 @@ async function deleteAccount() {
     } catch (e) {
         console.error("Error eliminando cuenta:", e);
         alert("🔌 Error de conexión con el servidor.");
+    }
+}
+
+// ==========================================
+// SHOP LOGIC
+// ==========================================
+
+async function loadShopData(token) {
+    try {
+        const res = await fetch(`${API_URL}/products/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const products = await res.json();
+            renderShop(products);
+        } else {
+            console.warn("No se pudieron cargar los productos");
+            document.getElementById('shopList').innerHTML = '<div style="color: #666;">La tienda está cerrada temporalmente.</div>';
+        }
+    } catch (e) {
+        console.error("Error loading shop", e);
+        document.getElementById('shopList').innerHTML = '<div style="color: #666;">Error de conexión con el inframundo.</div>';
+    }
+}
+
+function renderShop(products) {
+    const container = document.getElementById('shopList');
+    container.innerHTML = '';
+
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:#666;">No hay ofrendas disponibles por ahora.</div>';
+        return;
+    }
+
+    products.forEach(product => {
+        // filter out hidden products
+        if (product.is_active === false || product.is_visible === false) return;
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        // Image handling - use placeholder if URL looks relative or empty
+        let imgUrl = product.image_url;
+        if (!imgUrl || !imgUrl.startsWith('http')) {
+            // Placeholder for now
+             imgUrl = 'https://placehold.co/400x300/100000/bb0a1e?text=' + encodeURIComponent(product.name);
+        }
+        
+        card.innerHTML = `
+            <div class="product-image-container">
+                <img src="${imgUrl}" alt="${product.name}" class="product-image">
+            </div>
+            <div class="product-info">
+                <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">${product.type}</div>
+                <h3>${product.name}</h3>
+                <p style="color: #999; font-size: 0.9rem; margin-top: 5px; flex-grow: 1;">
+                    ${product.short_description || product.description || 'Sin descripción'}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px;">
+                    <span class="product-price">$${parseFloat(product.price).toFixed(2)}</span>
+                </div>
+                <button class="add-to-cart-btn" onclick="buyProduct(${product.id}, '${product.name}', ${product.price})">
+                    ADQUIRIR
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function buyProduct(productId, productName, price) {
+    if (!confirm(`¿Deseas invocar "${productName}" por $${price}?\n\nEl precio será descontado de tu balance de almas (si aplica) o generado como orden de pago.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const payload = {
+            items: [
+                {
+                    product_id: productId,
+                    quantity: 1
+                }
+            ]
+        };
+
+        const res = await fetch(`${API_URL}/orders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const order = await res.json();
+            alert(`¡Pacto sellado! Has adquirido: ${productName}. \nOrden #${order.order_number}`);
+            // Refresh data
+            checkSession(); // To update balance
+        } else {
+            const err = await res.json();
+            alert(`❌ El ritual falló: ${err.detail || 'Error desconocido'}`);
+        }
+    } catch (e) {
+        console.error("Error buying product", e);
+        alert("Error de conexión al intentar comprar.");
     }
 }
