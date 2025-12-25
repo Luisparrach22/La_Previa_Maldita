@@ -857,7 +857,98 @@ body {
         grid-template-columns: 1fr;
     }
 
+<<<<<<< Updated upstream
     .form-row {
         grid-template-columns: 1fr;
     }
 }
+=======
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Image Upload Styles */
+.image-upload-container {
+    padding: 15px;
+    background-color: var(--admin-bg);
+    border: 2px dashed var(--admin-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.image-upload-container:hover {
+    border-color: var(--admin-primary);
+    background-color: rgba(187, 10, 30, 0.05);
+}
+
+.image-upload-container input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--admin-text);
+}
+
+.image-upload-container input[type="file"]::file-selector-button {
+    background: var(--admin-primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 10px;
+    transition: background 0.2s;
+}
+
+.image-upload-container input[type="file"]::file-selector-button:hover {
+    background: #c11;
+}
+
+.image-preview {
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.image-preview img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+}
+
+.image-preview .btn-icon.delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    border: none;
+    color: white;
+}
+
+.upload-status {
+    font-size: 0.85em;
+    color: var(--admin-text-muted);
+}
+
+.upload-status.success {
+    color: #4ade80;
+}
+
+.upload-status.error {
+    color: #f87171;
+}
+>>>>>>> Stashed changes
