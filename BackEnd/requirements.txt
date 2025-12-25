@@ -21,3 +21,4 @@ python-dotenv>=1.0.0
 
 # Multipart (para formularios)
 python-multipart>=0.0.6
+fastapi-mail>=1.4.1

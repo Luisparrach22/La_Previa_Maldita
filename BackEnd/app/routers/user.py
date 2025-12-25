@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import List
 from .. import schemas, crud, database, auth, dependencies, models
+from ..email_utils import send_welcome_email
 
 router = APIRouter(
     prefix="/users",
@@ -16,13 +17,19 @@ router = APIRouter(
 # ============================================================================
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+def register_user(
+    user: schemas.UserCreate, 
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db)
+):
     """
     Registrar un nuevo usuario.
     
     - **username**: Nombre de usuario único
     - **email**: Email único del usuario
     - **password**: Contraseña del usuario
+    
+    Envía un correo de bienvenida automáticamente.
     """
     # Verificar si el email ya existe
     db_user = crud.get_user_by_email(db, email=user.email)
@@ -40,7 +47,12 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
             detail="El nombre de usuario ya está en uso"
         )
 
-    return crud.create_user(db=db, user=user)
+    new_user = crud.create_user(db=db, user=user)
+    
+    # Enviar correo de bienvenida en segundo plano
+    background_tasks.add_task(send_welcome_email, email_to=new_user.email, username=new_user.username)
+    
+    return new_user
 
 
 @router.post("/login", response_model=schemas.Token)

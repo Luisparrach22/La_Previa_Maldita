@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from .. import crud, schemas, database, dependencies, models
+from ..email_utils import send_ticket_email
 
 router = APIRouter(
     prefix="/orders",
@@ -15,8 +16,9 @@ router = APIRouter(
 # ============================================================================
 
 @router.post("/", response_model=schemas.OrderWithItems, status_code=status.HTTP_201_CREATED)
-def create_order(
+async def create_order(
     order: schemas.OrderCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(dependencies.get_current_user)
 ):
@@ -24,6 +26,7 @@ def create_order(
     Crear un nuevo pedido con los items especificados.
     
     El stock se descuenta automáticamente al crear el pedido.
+    Si el pedido contiene tickets, se envían por correo en segundo plano.
     
     **Ejemplo de body:**
     ```json
@@ -56,7 +59,26 @@ def create_order(
     # Descontar saldo (El commit se hace dentro de crud.create_order)
     current_user.soul_balance -= int(total_cost)
     
-    return crud.create_order(db=db, order=order, user_id=current_user.id)
+    new_order = crud.create_order(db=db, order=order, user_id=current_user.id)
+
+    # -------------------------------------------------------------
+    # EMAIL: Verificar si hay tickets y enviar correo
+    # -------------------------------------------------------------
+    ticket_codes = []
+    # Usamos new_order.items que ya está poblado desde la BD
+    for item in new_order.items:
+        if item.product_type == "ticket" and item.ticket_code:
+            ticket_codes.append(item.ticket_code)
+    
+    if ticket_codes:
+        background_tasks.add_task(
+            send_ticket_email, 
+            email_to=current_user.email,
+            customer_name=current_user.username,
+            ticket_codes=ticket_codes
+        )
+
+    return new_order
 
 
 @router.get("/my-orders", response_model=List[schemas.OrderWithItems])
