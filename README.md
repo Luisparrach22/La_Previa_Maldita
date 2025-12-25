@@ -218,6 +218,32 @@ Dashboard completo con gestión de usuarios, productos, pedidos y validación de
 
 ---
 
+---
+
+## 🖼️ Guía de Gestión de Imágenes
+
+Para asegurar que el portal luzca profesional y terrorífico, sigue estas recomendaciones al subir archivos desde el Panel de Administración:
+
+### 🎟️ Entradas (Tickets)
+
+- **Proporción**: 2:1 (Horizontal).
+- **Tamaño Recomendado**: 800 x 400 píxeles.
+- **Uso**: Se muestran como banners. Coloca el arte principal en el centro, ya que los bordes pueden recortarse levemente según el dispositivo.
+
+### 🛍️ Productos de la Tienda
+
+- **Proporción**: 1:1 (Cuadrado).
+- **Tamaño Recomendado**: 800 x 800 píxeles.
+- **Recomendación**: Usa archivos **PNG con fondo transparente** para que el objeto se integre perfectamente con el diseño oscuro de la página.
+
+### ⚙️ Especificaciones Técnicas
+
+- **Formatos Permitidos**: JPEG, PNG, WebP.
+- **Peso Máximo**: 2MB por imagen (para optimizar la carga en móviles).
+- **Estética**: Se recomienda usar imágenes con tonos oscuros, rojos o espectrales para mantener la temática de horror.
+
+---
+
 ## 🤝 Contribución
 
 Las contribuciones son bienvenidas:
