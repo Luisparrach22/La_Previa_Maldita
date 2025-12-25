@@ -986,48 +986,51 @@ async function viewOrder(orderId) {
 
     const content = document.getElementById('orderModalContent');
     content.innerHTML = `
-        <div style="padding: 24px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                <div>
-                    <h4 style="margin-bottom: 12px; color: var(--admin-text-muted);">Información del Cliente</h4>
-                    <p><strong>Email:</strong> ${order.customer_email}</p>
-                    <p><strong>Nombre:</strong> ${order.customer_name || 'N/A'}</p>
-                    <p><strong>Teléfono:</strong> ${order.customer_phone || 'N/A'}</p>
+        <div class="order-details-container">
+            <div class="order-info-grid">
+                <div class="order-info-section">
+                    <h4>Información del Cliente</h4>
+                    <div class="order-info-item"><strong>Email:</strong> <span>${order.customer_email}</span></div>
+                    <div class="order-info-item"><strong>Nombre:</strong> <span>${order.customer_name || 'N/A'}</span></div>
+                    <div class="order-info-item"><strong>Teléfono:</strong> <span>${order.customer_phone || 'N/A'}</span></div>
                 </div>
-                <div>
-                    <h4 style="margin-bottom: 12px; color: var(--admin-text-muted);">Estado del Pedido</h4>
-                    <p><strong>Estado:</strong> <span class="status-badge ${order.status}">${translateStatus(order.status)}</span></p>
-                    <p><strong>Pago:</strong> <span class="status-badge ${order.payment_status}">${translatePaymentStatus(order.payment_status)}</span></p>
-                    <p><strong>Fecha:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                <div class="order-info-section">
+                    <h4>Estado del Pedido</h4>
+                    <div class="order-info-item"><strong>Estado:</strong> <span class="status-badge ${order.status}">${translateStatus(order.status)}</span></div>
+                    <div class="order-info-item"><strong>Pago:</strong> <span class="status-badge ${order.payment_status}">${translatePaymentStatus(order.payment_status)}</span></div>
+                    <div class="order-info-item"><strong>Fecha:</strong> <span>${new Date(order.created_at).toLocaleString()}</span></div>
                 </div>
             </div>
             
-            <h4 style="margin-bottom: 12px; color: var(--admin-text-muted);">Items del Pedido</h4>
-            <table class="data-table" style="margin-bottom: 24px;">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Tipo</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unit.</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${order.items ? order.items.map(item => `
+            <div class="order-info-section">
+                <h4>Items del Pedido</h4>
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td>${item.product_name}</td>
-                            <td>${item.product_type || 'N/A'}</td>
-                            <td>${item.quantity}</td>
-                            <td>€${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td>€${parseFloat(item.subtotal).toFixed(2)}</td>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Subtotal</th>
                         </tr>
-                    `).join('') : '<tr><td colspan="5">Sin items</td></tr>'}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${order.items ? order.items.map(item => `
+                            <tr>
+                                <td>${item.product_name}</td>
+                                <td>${item.product_type || 'N/A'}</td>
+                                <td>${item.quantity}</td>
+                                <td>€${parseFloat(item.unit_price).toFixed(2)}</td>
+                                <td>€${parseFloat(item.subtotal).toFixed(2)}</td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="5">Sin items</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
             
-            <div style="text-align: right; font-size: 18px;">
-                <strong>Total: €${parseFloat(order.total).toFixed(2)}</strong>
+            <div class="order-total-section">
+                <span class="order-total-label">Total del Pedido:</span>
+                <span class="order-total-value">€${parseFloat(order.total).toFixed(2)}</span>
             </div>
         </div>
     `;
