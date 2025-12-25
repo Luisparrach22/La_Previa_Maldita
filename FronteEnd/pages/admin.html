@@ -44,10 +44,7 @@
                     <span class="nav-icon">📦</span>
                     <span>Pedidos</span>
                 </li>
-                <li onclick="switchSection('events')">
-                    <span class="nav-icon">🎪</span>
-                    <span>Eventos</span>
-                </li>
+
                 <li onclick="switchSection('tickets')">
                     <span class="nav-icon">🎟️</span>
                     <span>Validar Tickets</span>
@@ -268,15 +265,7 @@
             </div>
         </section>
 
-        <!-- Events Section -->
-        <section id="section-events" class="admin-section">
-            <div class="section-toolbar">
-                <button class="btn-primary" onclick="openEventModal()">+ Nuevo Evento</button>
-            </div>
-            <div class="events-grid" id="eventsGrid">
-                <p class="loading">Cargando eventos...</p>
-            </div>
-        </section>
+
 
         <!-- Validate Tickets Section -->
         <section id="section-tickets" class="admin-section">
@@ -507,7 +496,7 @@
         </div>
     </div>
 
-    <!-- Order Detail Modal -->
+
     <div id="orderModal" class="modal hidden">
         <div class="modal-content modal-large">
             <div class="modal-header">

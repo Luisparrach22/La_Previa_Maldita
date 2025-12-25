@@ -444,8 +444,3 @@ def mark_ticket_as_used(db: Session, ticket_code: str, admin_id: int) -> Optiona
     
     ticket.ticket_status = "used"
     ticket.ticket_used_at = datetime.utcnow()
-    ticket.ticket_checked_by = admin_id
-    
-    db.commit()
-    db.refresh(ticket)
-    return ticket

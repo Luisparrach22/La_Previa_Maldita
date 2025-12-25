@@ -106,7 +106,7 @@ function switchSection(sectionId) {
         'entradas': { title: 'Entradas', subtitle: 'Gestión de tickets y pases de acceso' },
         'products': { title: 'Productos', subtitle: 'Gestión de merchandise, bebidas y comida' },
         'orders': { title: 'Pedidos', subtitle: 'Gestión de pedidos y ventas' },
-        'events': { title: 'Eventos', subtitle: 'Gestión de eventos' },
+
         'tickets': { title: 'Validar Tickets', subtitle: 'Verificar y marcar tickets como usados' }
     };
 
@@ -120,7 +120,7 @@ function switchSection(sectionId) {
         case 'entradas': loadEntradas(); break;
         case 'products': loadProducts(); break;
         case 'orders': loadOrders(); break;
-        case 'events': loadEvents(); break;
+
     }
 }
 
@@ -1076,37 +1076,7 @@ async function changeOrderStatus(orderId) {
     }
 }
 
-// ============================================================================
-// EVENTS MANAGEMENT
-// ============================================================================
 
-async function loadEvents() {
-    const grid = document.getElementById('eventsGrid');
-    grid.innerHTML = '<p class="loading">Cargando eventos...</p>';
-
-    // Por ahora mostramos evento estático ya que no tenemos endpoint de eventos
-    grid.innerHTML = `
-        <div class="event-card">
-            <div class="event-card-header">🎃</div>
-            <div class="event-card-body">
-                <div class="event-card-title">La Previa Maldita 2025</div>
-                <div class="event-card-date">📅 31 de Octubre, 2025</div>
-                <span class="status-badge active">Publicado</span>
-            </div>
-        </div>
-        <div class="event-card" style="opacity: 0.5;">
-            <div class="event-card-header" style="background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);">➕</div>
-            <div class="event-card-body">
-                <div class="event-card-title">Crear Nuevo Evento</div>
-                <div class="event-card-date">Próximamente...</div>
-            </div>
-        </div>
-    `;
-}
-
-function openEventModal() {
-    alert('Funcionalidad de eventos próximamente...');
-}
 
 // ============================================================================
 // TICKET VALIDATION
