@@ -1,8 +1,7 @@
 // ============================================================================
 // ADMIN PANEL - LA PREVIA MALDITA
 // ============================================================================
-
-const API_URL = "http://localhost:8000";
+// API_URL se hereda globalmente de api.js
 let adminToken = null;
 let currentAdmin = null;
 

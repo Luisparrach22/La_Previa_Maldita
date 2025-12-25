@@ -3,7 +3,9 @@
 // Módulo centralizado para comunicación con el Backend
 // ============================================================================
 
+// Definir API_URL globalmente
 const API_URL = "http://localhost:8000";
+window.API_URL = API_URL;
 
 /**
  * Sube una imagen al servidor de forma asíncrona.

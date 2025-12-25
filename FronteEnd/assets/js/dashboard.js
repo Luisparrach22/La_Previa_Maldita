@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURACIÓN
 // ==========================================
-const API_URL = "http://localhost:8000";
+// API_URL se hereda globalmente de api.js
 
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();

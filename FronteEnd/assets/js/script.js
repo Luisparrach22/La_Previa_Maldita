@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURACIÓN Y ESTADO GLOBAL
 // ==========================================
-const API_URL = "http://localhost:8000";
+// API_URL se hereda globalmente de api.js
 let currentUser = null;
 let cart = [];
 let gameScore = 0;
