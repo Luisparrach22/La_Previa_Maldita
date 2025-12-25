@@ -148,9 +148,75 @@ function startOrdersPolling() {
 function stopOrdersPolling() {
     if (ordersPollingInterval) {
         clearInterval(ordersPollingInterval);
-        ordersPollingInterval = null;
-        console.log('📡 Polling de pedidos detenido');
     }
+}
+
+// ============================================================================
+// IMAGE UPLOAD HANDLING
+// ============================================================================
+
+async function uploadImage(context) {
+    // context: 'entrada' or 'product'
+    const fileInput = document.getElementById(`${context}ImageFile`);
+    const hiddenInput = document.getElementById(`${context}Image`);
+    const previewDiv = document.getElementById(`${context}ImagePreview`);
+    const previewImg = document.getElementById(`${context}ImagePreviewImg`);
+    const statusDiv = document.getElementById(`${context}UploadStatus`);
+
+    if (!fileInput.files || !fileInput.files[0]) return;
+
+    const file = fileInput.files[0];
+    statusDiv.textContent = 'Subiendo...';
+    statusDiv.className = 'upload-status';
+
+    // 1. Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewDiv.classList.remove('hidden');
+    }
+    reader.readAsDataURL(file);
+
+    // 2. Upload to server
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch(`${API_URL}/upload/`, {
+            method: 'POST',
+            body: formData,
+            // Header is NOT 'Content-Type': 'multipart/form-data' explicitly 
+            // because browser sets it with boundary automatically
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            hiddenInput.value = data.url; // Save URL for final form submission
+            statusDiv.textContent = '✅ Subida completada';
+            statusDiv.className = 'upload-status success';
+        } else {
+            throw new Error('Falló la subida');
+        }
+    } catch (e) {
+        console.error(e);
+        statusDiv.textContent = '❌ Error al subir';
+        statusDiv.className = 'upload-status error';
+        alert("Error al subir imagen");
+    }
+}
+
+function removeImage(context) {
+    const fileInput = document.getElementById(`${context}ImageFile`);
+    const hiddenInput = document.getElementById(`${context}Image`);
+    const previewDiv = document.getElementById(`${context}ImagePreview`);
+    const previewImg = document.getElementById(`${context}ImagePreviewImg`);
+    const statusDiv = document.getElementById(`${context}UploadStatus`);
+
+    fileInput.value = ''; // Reset file input
+    hiddenInput.value = ''; // Clear stored URL
+    previewImg.src = '';
+    previewDiv.classList.add('hidden'); // Hide preview
+    statusDiv.textContent = '';
 }
 
 async function refreshOrdersInBackground() {

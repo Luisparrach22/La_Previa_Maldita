@@ -385,15 +385,15 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>URL de Imagen del Pase</label>
-                    <input type="url" id="entradaImage" placeholder="https://ejemplo.com/imagen.jpg" 
-                           oninput="previewEntradaImage()">
-                    <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 5px;">
-                        💡 Pega aquí el enlace de una imagen (puedes usar servicios como Imgur, Cloudinary, etc.)
-                    </small>
-                    <div id="entradaImagePreview" style="margin-top: 10px; display: none;">
-                        <img id="entradaImagePreviewImg" src="" alt="Vista previa" 
-                             style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #333;">
+                    <label>Imagen del Pase</label>
+                    <div class="image-upload-container">
+                        <input type="file" id="entradaImageFile" accept="image/*" onchange="uploadImage('entrada')">
+                        <input type="hidden" id="entradaImage"> <!-- Original ID kept for compatibility -->
+                        <div id="entradaImagePreview" class="image-preview hidden">
+                            <img id="entradaImagePreviewImg" src="" alt="Vista previa">
+                            <button type="button" class="btn-icon delete" onclick="removeImage('entrada')" title="Eliminar imagen">❌</button>
+                        </div>
+                        <div id="entradaUploadStatus" class="upload-status"></div>
                     </div>
                 </div>
                 <div class="form-row">
@@ -414,7 +414,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeEntradaModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Entrada</button>
+                    <button type="submit" class="btn-primary" id="saveEntradaBtn">Guardar Entrada</button>
                 </div>
             </form>
         </div>
@@ -463,14 +463,16 @@
                     </div>
                 </div>
                 <div class="form-group">
-                <div class="form-group">
-                    <label>Imagen del Producto</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input type="file" id="productImageFile" accept="image/*" style="padding: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 4px;">
+                    <label>Imagen</label>
+                     <div class="image-upload-container">
+                        <input type="file" id="productImageFile" accept="image/*" onchange="uploadImage('product')">
+                        <input type="hidden" id="productImage"> <!-- Original ID kept for compatibility -->
+                        <div id="productImagePreview" class="image-preview hidden">
+                            <img id="productImagePreviewImg" src="" alt="Vista previa">
+                             <button type="button" class="btn-icon delete" onclick="removeImage('product')" title="Eliminar imagen">❌</button>
+                        </div>
+                         <div id="productUploadStatus" class="upload-status"></div>
                     </div>
-                    <label style="font-size: 0.8rem; color: #aaa;">O usa una URL:</label>
-                    <input type="text" id="productImage" placeholder="https://...">
-                </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">

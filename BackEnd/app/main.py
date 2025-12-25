@@ -3,8 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from .database import engine, Base, SessionLocal
-from .routers import user, products, games, orders
+from .routers import user, products, games, orders, upload
 import os
+
+# ... (Previous code) ... (It's better to just do the import change and the include change)
+
+# Note: The tool requires me to provide context. I will use a larger block or target precise lines.
+
+# Let's target the imports first
+
 
 
 # ============================================================================
@@ -94,6 +101,7 @@ app.include_router(user.router)
 app.include_router(products.router)
 app.include_router(games.router)
 app.include_router(orders.router)
+app.include_router(upload.router)
 
 
 # ============================================================================
