@@ -29,6 +29,7 @@
 
     <!-- CSS with preload for critical path -->
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/games.css">
 
     <!-- Fonts -->
     <link
@@ -193,20 +194,74 @@
 
         <!-- Games Section -->
         <section id="games" class="section game-section">
-            <div class="game-banner">
-                <div class="game-content">
-                    <h2 class="glitch-text-small">¿JUGAMOS UN JUEGO?</h2>
-                    <p>Sobrevive a los espectros y gana descuentos reales en la tienda.</p>
-                    <div class="score-board">
-                        <span>Tu Puntuación: <strong id="scoreDisplay" class="blood-text">0</strong></span>
-                        <span>Récord Personal: <strong id="highScoreDisplay">0</strong></span>
-                    </div>
-                    <button class="btn-start-game" onclick="startGame()">DESAFIAR AL DESTINO</button>
+            <h2 class="section-title">Juegos Mortales</h2>
+            
+            <!-- Game Selector Menu -->
+            <div id="gameSelector" class="game-hub">
+                <div class="game-card-select" onclick="selectGame('whack')">
+                    <div class="game-icon">👻</div>
+                    <h3>Whack-a-Ghost</h3>
+                    <p>Aplasta espectros antes de que te roben el alma.</p>
                 </div>
-                <div class="game-visual" id="gameArea">
-                    <div id="target" class="ghost-target hidden" onclick="hitTarget()">👻</div>
+                <div class="game-card-select" onclick="selectGame('trivia')">
+                    <div class="game-icon">🧠</div>
+                    <h3>Trivia Maldita</h3>
+                    <p>Demuestra tu conocimiento del horror o muere.</p>
+                </div>
+                <div class="game-card-select" onclick="selectGame('memory')">
+                    <div class="game-icon">🃏</div>
+                    <h3>Memoria Letal</h3>
+                    <p>Encuentra las parejas malditas antes del tiempo.</p>
                 </div>
             </div>
+
+            <!-- Game Container: Whack-a-Ghost -->
+            <!-- Game Container: Whack-a-Ghost -->
+            <div id="game-whack" class="game-container hidden">
+                <button class="btn-back-menu" onclick="showGameMenu()">⬅ Volver al Menú</button>
+                <div class="game-banner">
+                    <div class="game-content">
+                        <h2 class="glitch-text-small">WHACK-A-GHOST</h2>
+                        <p>Sobrevive a los espectros y gana descuentos reales.</p>
+                        <div class="score-board">
+                            <span>Puntuación: <strong id="scoreDisplay" class="blood-text">0</strong></span>
+                        </div>
+                        <button class="btn-start-game" onclick="initWhackGame()">JUGAR AHORA</button>
+                    </div>
+                    <div class="game-visual" id="gameArea">
+                        <div id="target" class="ghost-target hidden" onclick="hitTarget()">👻</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Container: Trivia -->
+            <div id="game-trivia" class="game-container hidden">
+                <button class="btn-back-menu" onclick="showGameMenu()">⬅ Volver al Menú</button>
+                <div class="trivia-layout">
+                    <h2>Trivia del Terror</h2>
+                    <div id="trivia-content">
+                        <p id="trivia-question" class="trivia-question">¿Preparado para responder?</p>
+                        <div id="trivia-options" class="trivia-options">
+                            <!-- Options will be injected here -->
+                        </div>
+                    </div>
+                    <button class="btn-start-game" onclick="initTriviaGame()">COMENZAR TRIVIA</button>
+                    <p id="trivia-feedback" class="trivia-feedback"></p>
+                </div>
+            </div>
+
+            <!-- Game Container: Memory -->
+            <div id="game-memory" class="game-container hidden">
+                <button class="btn-back-menu" onclick="showGameMenu()">⬅ Volver al Menú</button>
+                <div class="memory-layout">
+                    <h2>Memoria Letal</h2>
+                    <div id="memory-grid" class="memory-grid">
+                        <!-- Cards injected here -->
+                    </div>
+                    <button class="btn-start-game" onclick="initMemoryGame()">REPARTIR CARTAS</button>
+                </div>
+            </div>
+
         </section>
 
     </div>

@@ -32,95 +32,62 @@ document.addEventListener('DOMContentLoaded', () => {
     initCountdown();
     setupScrollEffects();
     setupKeyboardListeners();
+    setupSessionSync();
 });
 
 function setupKeyboardListeners() {
-    // Escuchar Enter en el modal de login/registro
-    const authInputs = ['usernameInput', 'emailInput', 'passwordInput'];
-    authInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleAuthSubmit();
-                }
-            });
+    // ESTRATEGIA GLOBAL: Escuchar Enter en todo el documento
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            const activeId = document.activeElement.id;
+            
+            // Caso: Login / Registro
+            if (['usernameInput', 'emailInput', 'passwordInput'].includes(activeId)) {
+                e.preventDefault();
+                handleAuthSubmit();
+            }
+            
+            // Caso: Chat
+            if (activeId === 'chatInput') {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+    });
+}
+
+function setupSessionSync() {
+    // Sincronizar logout/login entre pestañas
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'token') {
+            if (!event.newValue) {
+                // Si borraron el token en otra pestaña -> Logout aquí también
+                logout(false); // false = no reload loop
+            } else {
+                // Si pusieron token en otra pestaña -> Login aquí también
+                checkAuthSession();
+            }
         }
     });
 
-    // Escuchar Enter en el chat interactivo
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    }
-}
-
-function setupScrollEffects() {
-    const nav = document.getElementById('mainNav');
-
-    // Navbar scroll effect con throttle para mejor rendimiento
-    const handleScroll = throttle(() => {
-        if (window.scrollY > 50) {
-            nav.classList.add('scrolled');
-        } else {
-            nav.classList.remove('scrolled');
+    // Validar sesión al volver a la pestaña
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkAuthSession(false, false); // No redirect forced
         }
-    }, 100);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Mobile Menu Toggle
-    window.toggleMobileNav = () => {
-        const menu = document.getElementById('mobileMenu');
-        menu.classList.toggle('active');
-    };
-}
-
-// ==========================================
-// CUENTA REGRESIVA
-// ==========================================
-function initCountdown() {
-    // Cache DOM elements for performance
-    const daysEl = document.getElementById("days");
-    const hoursEl = document.getElementById("hours");
-    const minutesEl = document.getElementById("minutes");
-    const secondsEl = document.getElementById("seconds");
-
-    // Fecha objetivo: 31 de Octubre del próximo octubre disponible
-    const currentYear = new Date().getFullYear();
-    const targetDate = new Date(`October 31, ${currentYear} 00:00:00`).getTime();
-
-    // Si ya pasó Halloween este año (estamos en Nov/Dic), apuntar al próximo
-    const now = new Date().getTime();
-    const finalTargetDate = targetDate < now ? new Date(`October 31, ${currentYear + 1} 00:00:00`).getTime() : targetDate;
-
-    setInterval(() => {
-        const now = new Date().getTime();
-        const distance = finalTargetDate - now;
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        daysEl.textContent = days.toString().padStart(2, '0');
-        hoursEl.textContent = hours.toString().padStart(2, '0');
-        minutesEl.textContent = minutes.toString().padStart(2, '0');
-        secondsEl.textContent = seconds.toString().padStart(2, '0');
-    }, 1000);
+    });
 }
 
 // ==========================================
 // AUTENTICACIÓN
 // ==========================================
-function checkAuthSession(redirectAfterLogin = false) {
+function checkAuthSession(redirectAfterLogin = false, forceRedirectOnHome = true) {
     const token = localStorage.getItem('token');
 
-    if (!token) return;
+    if (!token) {
+        if (currentUser) logout(false);
+        return;
+    }
 
     // Validar token con el backend
     fetch(`${API_URL}/users/me`, {
@@ -131,41 +98,52 @@ function checkAuthSession(redirectAfterLogin = false) {
             throw new Error('Sesión expirada');
         })
         .then(user => {
+            const hasChangedUser = !currentUser || currentUser.username !== user.username;
             currentUser = user;
             
-            // Si estamos en la página de inicio (index.html) y el usuario ya tiene sesión,
-            // redirigir automáticamente a su panel correspondiente
+            // Actualizar UI
+            updateUIForUser(user);
+            
+            // Lógica de Redirección Inteligente
             const isOnIndexPage = window.location.pathname.endsWith('index.html') || 
                                  window.location.pathname === '/' ||
                                  window.location.pathname.endsWith('/');
-            
-            if (isOnIndexPage) {
-                // SIEMPRE redirigir si estamos en la página de inicio y hay sesión
-                console.log('🔄 Usuario autenticado detectado en página de inicio. Redirigiendo...');
+
+            // Solo redirigir automáticamente si estamos en Home Y (es redirección forzada O es login reciente)
+            // PERO si es Admin, le permitimos quedarse en el Home para ver sus cambios (si no es un login fresco)
+            if (isOnIndexPage && (redirectAfterLogin || (forceRedirectOnHome && user.role !== 'admin'))) {
+                console.log('🔄 Usuario autenticado. Redirigiendo a su panel...');
                 redirectToUserPage(user);
-            } else {
-                // Solo actualizar UI si estamos en otra página
-                updateUIForUser(user);
-                
-                // Redirigir si es un login nuevo
-                if (redirectAfterLogin) {
-                    redirectToUserPage(user);
-                }
+            }
+            
+            // Si es un login fresco (acaba de dar click en ingresar), sí mandamos al admin a su panel
+            if (isOnIndexPage && user.role === 'admin' && redirectAfterLogin) {
+                 redirectToUserPage(user);
+            }
+
+            if (hasChangedUser) {
+                console.log(`💀 Sesión activa: ${user.username} (${user.role})`);
             }
         })
         .catch(() => {
             // Token inválido o servidor no disponible - limpiar sesión
             localStorage.removeItem('token');
             currentUser = null;
+            updateUIForUser(null); // Reset UI
         });
 }
 
 // Función para redirigir según el rol del usuario
 function redirectToUserPage(user) {
+    // Evitar loop de redirección
     if (user.role === 'admin') {
-        window.location.href = 'pages/admin.html';
+        if (!window.location.href.includes('admin.html')) {
+            window.location.href = 'pages/admin.html';
+        }
     } else {
-        window.location.href = 'pages/user_page.html';
+        if (!window.location.href.includes('user_page.html')) {
+            window.location.href = 'pages/user_page.html';
+        }
     }
 }
 
@@ -297,12 +275,20 @@ async function handleAuthSubmit() {
     }
 }
 
-function logout() {
+function logout(reload = true) {
     localStorage.removeItem('token');
     currentUser = null;
     document.getElementById('authActions').classList.remove('hidden');
     document.getElementById('authUser').classList.add('hidden');
-    window.location.reload();
+    
+    if (reload) {
+        window.location.reload();
+    } else {
+        // Si no recargamos (ej: logout desde otra pestaña), al menos redirigir al home si es página protegida
+        if (window.location.pathname.includes('user_page.html')) {
+            window.location.href = '../index.html';
+        }
+    }
 }
 
 // ==========================================
@@ -641,22 +627,83 @@ async function checkout() {
 // ==========================================
 // JUEGO
 // ==========================================
-function startGame() {
+// ==========================================
+// CENTRAL DE JUEGOS
+// ==========================================
+
+// ==========================================
+// CENTRAL DE JUEGOS
+// ==========================================
+
+function enforceGameVisibility(activeGameId) {
+    // 1. Ocultar selector
+    const selector = document.getElementById('gameSelector');
+    if (selector) selector.classList.add('hidden');
+
+    // 2. Ocultar todos los contenedores
+    document.querySelectorAll('.game-container').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // 3. Mostrar el activo
+    const activeEl = document.getElementById(activeGameId);
+    if (activeEl) {
+        activeEl.classList.remove('hidden');
+    } else {
+        console.error(`Juego no encontrado: ${activeGameId}`);
+    }
+}
+
+function selectGame(gameType) {
+    console.log(`Seleccionando juego: ${gameType}`);
+    enforceGameVisibility(`game-${gameType}`);
+}
+
+function showGameMenu() {
+    console.log("Volviendo al menú de juegos...");
+    
+    document.querySelectorAll('.game-container').forEach(el => el.classList.add('hidden'));
+    const selector = document.getElementById('gameSelector');
+    if (selector) selector.classList.remove('hidden');
+    
+    // Detener juegos
+    gameActive = false;
+    clearTimeout(gameTimer);
+    
+    // Resetear Trivia
+    const triviaFeedback = document.getElementById('trivia-feedback');
+    const triviaOptions = document.getElementById('trivia-options');
+    if (triviaFeedback) triviaFeedback.textContent = '';
+    if (triviaOptions) triviaOptions.innerHTML = '';
+    
+    // Resetear Memory
+    const memoryGrid = document.getElementById('memory-grid');
+    if (memoryGrid) memoryGrid.innerHTML = '';
+}
+
+// ==========================================
+// JUEGO 1: WHACK-A-GHOST
+// ==========================================
+function initWhackGame() {
+    console.log("Iniciando Whack-a-Ghost");
+    enforceGameVisibility('game-whack'); 
+    
     if (gameActive) return;
 
-    const gameArea = document.getElementById('gameArea');
     const target = document.getElementById('target');
     const scoreDisplay = document.getElementById('scoreDisplay');
-
+    
+    if (!target) return; 
+    
     gameActive = true;
     gameScore = 0;
-    scoreDisplay.textContent = '0';
+    if(scoreDisplay) scoreDisplay.textContent = '0';
 
     target.classList.remove('hidden');
     moveTarget();
 
     setTimeout(() => {
-        endGame();
+        endGame('whack');
     }, 15000);
 }
 
@@ -665,6 +712,8 @@ function moveTarget() {
 
     const target = document.getElementById('target');
     const gameArea = document.getElementById('gameArea');
+
+    if (!target || !gameArea) return;
 
     const maxX = gameArea.clientWidth - 50;
     const maxY = gameArea.clientHeight - 50;
@@ -679,11 +728,186 @@ function moveTarget() {
     gameTimer = setTimeout(moveTarget, 800 + Math.random() * 500);
 }
 
+// ==========================================
+// JUEGO 2: TRIVIA MALDITA
+// ==========================================
+const triviaQuestions = [
+    { q: "¿En qué año se estrenó 'El Exorcista'?", options: ["1973", "1980", "1968", "1975"], correct: 0 },
+    { q: "¿Cómo se llama el asesino de 'Halloween'?", options: ["Jason", "Freddy", "Michael Myers", "Leatherface"], correct: 2 },
+    { q: "¿Qué dicen los cuervos?", options: ["Nunca más", "Siempre", "Morirás", "Croar"], correct: 0 },
+    { q: "¿Cuál es el hotel de 'El Resplandor'?", options: ["Motel Bates", "Overlook", "Hotel California", "Cecil"], correct: 1 }
+];
+
+function initTriviaGame() {
+    console.log("Iniciando Trivia");
+    enforceGameVisibility('game-trivia'); 
+
+    const qIndex = Math.floor(Math.random() * triviaQuestions.length);
+    const question = triviaQuestions[qIndex];
+    
+    const qEl = document.getElementById('trivia-question');
+    const optsEl = document.getElementById('trivia-options');
+    const feedbackEl = document.getElementById('trivia-feedback');
+
+    if(qEl) qEl.textContent = question.q;
+    if(optsEl) optsEl.innerHTML = '';
+    if(feedbackEl) {
+        feedbackEl.textContent = '';
+        feedbackEl.className = 'trivia-feedback'; 
+    }
+
+    if(optsEl) {
+        question.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'trivia-btn';
+            btn.textContent = opt;
+            btn.onclick = () => checkTriviaAnswer(index, question.correct, btn);
+            optsEl.appendChild(btn);
+        });
+    }
+}
+
+function checkTriviaAnswer(selected, correct, btn) {
+    const feedbackEl = document.getElementById('trivia-feedback');
+    
+    // Deshabilitar botones para evitar doble click
+    document.querySelectorAll('.trivia-btn').forEach(b => b.disabled = true);
+
+    if (selected === correct) {
+        btn.classList.add('correct');
+        if(feedbackEl) {
+            feedbackEl.textContent = "¡CORRECTO! +50 Almas";
+            feedbackEl.style.color = "#059669";
+        }
+        saveGameScore('trivia', 50);
+    } else {
+        btn.classList.add('wrong');
+        if(feedbackEl) {
+            feedbackEl.textContent = "INCORRECTO. Tu ignorancia es fatal.";
+            feedbackEl.style.color = "#dc2626";
+        }
+    }
+    
+    // Auto-restart after delay ONLY if game is still visible
+    setTimeout(() => {
+        const triviaContainer = document.getElementById('game-trivia');
+        if (triviaContainer && !triviaContainer.classList.contains('hidden')) {
+            initTriviaGame();
+        }
+    }, 2000);
+}
+
+
+// ==========================================
+// JUEGO 3: MEMORIA LETAL
+// ==========================================
+const memoryEmojis = ['💀', '🩸', '🕷️', '🦇', '⚰️', '🔪', '🎃', '🧟'];
+let memoryCards = [];
+let flippedCards = [];
+let memoryLocked = false;
+
+function initMemoryGame() {
+    console.log("Iniciando Memoria");
+    enforceGameVisibility('game-memory'); 
+
+    const grid = document.getElementById('memory-grid');
+    if(!grid) return;
+
+    grid.innerHTML = '';
+    flippedCards = [];
+    memoryCards = [];
+    
+    // Crear pares
+    const deck = [...memoryEmojis, ...memoryEmojis]; 
+    // Barajar
+    deck.sort(() => 0.5 - Math.random());
+    
+    deck.forEach((emoji, index) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.value = emoji;
+        card.dataset.id = index;
+        
+        card.innerHTML = `
+            <div class="front"></div>
+            <div class="back">${emoji}</div>
+        `;
+        
+        card.onclick = () => flipCard(card);
+        grid.appendChild(card);
+        memoryCards.push(card);
+    });
+}
+
+function flipCard(card) {
+    if (memoryLocked) return;
+    if (card.classList.contains('flipped')) return;
+    
+    card.classList.add('flipped');
+    flippedCards.push(card);
+
+    if (flippedCards.length === 2) {
+        memoryLocked = true;
+        checkMemoryMatch();
+    }
+}
+
+function checkMemoryMatch() {
+    const [card1, card2] = flippedCards;
+    const match = card1.dataset.value === card2.dataset.value;
+
+    if (match) {
+        // Match found
+        flippedCards = [];
+        memoryLocked = false;
+        
+        // Check win condition
+        if (document.querySelectorAll('.memory-card.flipped').length === memoryCards.length) {
+            setTimeout(() => {
+                alert("¡MEMORIA PERFECTA! +100 Almas");
+                saveGameScore('memory', 100);
+            }, 500);
+        }
+    } else {
+        // No match
+        setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+            memoryLocked = false;
+        }, 1000);
+    }
+}
+
+
+function saveGameScore(gameType, score) {
+    if (!currentUser) return; // Solo guardar si está logueado
+    
+    // Actualizar UI local
+    currentUser.soul_balance = (currentUser.soul_balance || 0) + score;
+    updateSoulBalance(currentUser.soul_balance);
+
+    // Enviar al servidor
+    fetch(`${API_URL}/games/score`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+            game_type: gameType,
+            score_value: score
+        })
+    }).catch(console.error);
+}
+
+
 function hitTarget() {
     if (!gameActive) return;
 
     gameScore += 10;
-    document.getElementById('scoreDisplay').textContent = gameScore;
+    const scoreEl = document.getElementById('scoreDisplay');
+    if(scoreEl) scoreEl.textContent = gameScore;
 
     const target = document.getElementById('target');
     target.style.transform = "scale(0.8)";
@@ -692,37 +916,15 @@ function hitTarget() {
     moveTarget();
 }
 
-function endGame() {
+function endGame(gameType) {
     gameActive = false;
     document.getElementById('target').classList.add('hidden');
     clearTimeout(gameTimer);
 
-    alert(`¡Sobreviviste! Has cosechado ${gameScore} Almas.`);
+    alert(`¡Tiempo! Puntuación final: ${gameScore}`);
 
-    if (currentUser) {
-        // Enviar Puntuación y Ganar Almas
-        fetch(`${API_URL}/games/score`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-                game_type: 'whack_a_ghost',
-                score_value: gameScore
-            })
-        })
-            .then(res => {
-                if (res.ok) {
-                    // Actualizar saldo localmente
-                    currentUser.soul_balance = (currentUser.soul_balance || 0) + gameScore;
-                    updateSoulBalance(currentUser.soul_balance);
-                    showNotification(`+${gameScore} Almas añadidas a tu cuenta`);
-                }
-            })
-            .catch(err => console.error("Error guardando score", err));
-    } else {
-        alert("¡Inicia sesión para guardar tus Almas!");
+    if (currentUser && gameScore > 0) {
+        saveGameScore(gameType, gameScore);
     }
 }
 

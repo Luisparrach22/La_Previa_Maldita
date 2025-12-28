@@ -26,40 +26,38 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCurrentDate();
     startOrdersPolling();
     setupKeyboardListeners();
+    setupSessionSync();
 });
 
+function setupSessionSync() {
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'token') {
+            if (!event.newValue) {
+                // Logout detectado en otra pestaña
+                redirectToLogin("Sesión cerrada en otra ventana.");
+            } else {
+                // Login detectado (ej: token refrescado)
+                adminToken = event.newValue;
+            }
+        }
+    });
+}
+
 function setupKeyboardListeners() {
-    // Buscador de usuarios
-    const searchUsers = document.getElementById('searchUsers');
-    if (searchUsers) {
-        searchUsers.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') filterUsers();
-        });
-    }
+    // ESTRATEGIA GLOBAL: Escuchar Enter en todo el documento para Admin
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            const activeId = document.activeElement.id;
 
-    // Buscador de productos
-    const searchProducts = document.getElementById('searchProducts');
-    if (searchProducts) {
-        searchProducts.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') filterProducts();
-        });
-    }
+            // Buscadores
+            if (activeId === 'searchUsers') filterUsers();
+            if (activeId === 'searchProducts') filterProducts();
+            if (activeId === 'searchOrders') filterOrders();
 
-    // Buscador de pedidos
-    const searchOrders = document.getElementById('searchOrders');
-    if (searchOrders) {
-        searchOrders.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') filterOrders();
-        });
-    }
-
-    // Validación de tickets
-    const ticketInput = document.getElementById('ticketCodeInput');
-    if (ticketInput) {
-        ticketInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validateTicket();
-        });
-    }
+            // Validación de Tickets
+            if (activeId === 'ticketCodeInput') validateTicket();
+        }
+    });
 }
 
 function updateCurrentDate() {
