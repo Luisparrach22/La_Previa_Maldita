@@ -76,13 +76,36 @@ function switchTab(tabId) {
     });
 
     if (tabId === 'games') {
-        startMemoryGame();
+        // Preparar el tablero pero no auto-iniciar
+        prepareMemoryGameUI();
     }
 }
 
 
 
 /* ==================== GAMES LOGIC (MEMORY ONLY) ==================== */
+
+function prepareMemoryGameUI() {
+    // Resetear tablero y UI sin auto-iniciar el juego
+    const grid = document.getElementById('memory-grid');
+    grid.innerHTML = '';
+    
+    // Resetear estadísticas
+    memorySeconds = 0;
+    moves = 0;
+    matchedPairs = 0;
+    
+    document.getElementById('memory-moves').textContent = moves;
+    document.getElementById('memory-time').textContent = '00:00';
+    
+    // Mostrar solo el botón de Iniciar
+    document.getElementById('btn-start-memory').style.display = 'inline-block';
+    document.getElementById('btn-restart-memory').style.display = 'none';
+    document.getElementById('btn-pause-memory').style.display = 'none';
+    
+    // Ocultar overlay de pausa
+    document.getElementById('memory-paused-overlay').style.display = 'none';
+}
 
 let memoryInterval = null;
 let memoryPeekTimeout = null;
@@ -118,6 +141,38 @@ let matchedPairs = 0;
 let moves = 0;
 let lockBoard = false;
 
+function initMemoryGame() {
+    console.log('🎮 Iniciando juego de memoria con vista previa...');
+    
+    // Llamar a startMemoryGame para crear el tablero
+    startMemoryGame();
+    
+    // Ocultar botón "Iniciar" y mostrar botones de control
+    document.getElementById('btn-start-memory').style.display = 'none';
+    document.getElementById('btn-restart-memory').style.display = 'inline-block';
+    document.getElementById('btn-pause-memory').style.display = 'inline-block';
+    
+    // Mostrar todas las cartas durante 3 segundos (peek)
+    const allCards = document.querySelectorAll('.memory-card');
+    lockBoard = true; // Bloquear clics durante la vista previa
+    
+    // Voltear todas las cartas
+    allCards.forEach(card => {
+        card.classList.add('flipped');
+    });
+    
+    console.log('👀 Mostrando todas las cartas por 3 segundos...');
+    
+    // Después de 3 segundos, ocultar todas las cartas y comenzar el juego
+    memoryPeekTimeout = setTimeout(() => {
+        console.log('🙈 Ocultando cartas - ¡El juego comienza!');
+        allCards.forEach(card => {
+            card.classList.remove('flipped');
+        });
+        lockBoard = false; // Desbloquear para que el jugador pueda jugar
+    }, 3000); // 3 segundos de vista previa
+}
+
 function startMemoryGame() {
     stopActiveGames(); // Stop any running timers
     
@@ -125,7 +180,6 @@ function startMemoryGame() {
     const grid = document.getElementById('memory-grid');
     grid.innerHTML = '';
     document.getElementById('memory-paused-overlay').style.display = 'none';
-    document.getElementById('btn-pause-memory').textContent = "Pausar";
     
     // Reset Variables
     flippedCards = [];

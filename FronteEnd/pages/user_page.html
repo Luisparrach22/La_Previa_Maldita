@@ -95,8 +95,9 @@
                             <span style="font-size: 1.2rem;">Tiempo: <span id="memory-time">00:00</span></span>
                         </div>
                         <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
-                            <button class="btn-gold" onclick="startMemoryGame()" style="padding: 5px 15px; font-size: 1rem;">Reiniciar</button>
-                            <button class="btn-gold" onclick="togglePauseMemory()" id="btn-pause-memory" style="padding: 5px 15px; font-size: 1rem;">Pausar</button>
+                            <button id="btn-start-memory" class="btn-gold" onclick="initMemoryGame()" style="padding: 10px 25px; font-size: 1.1rem; background: linear-gradient(135deg, var(--dash-gold), #d4af37); box-shadow: 0 0 20px rgba(218, 165, 32, 0.4); font-weight: bold;">⚡ Iniciar Juego</button>
+                            <button class="btn-gold" onclick="initMemoryGame()" id="btn-restart-memory" style="padding: 5px 15px; font-size: 1rem; display: none;">🔄 Reiniciar</button>
+                            <button class="btn-gold" onclick="togglePauseMemory()" id="btn-pause-memory" style="padding: 5px 15px; font-size: 1rem; display: none;">⏸️ Pausar</button>
                         </div>
                         
                         <div id="memory-paused-overlay" class="hidden" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 10; display: flex; align-items: center; justify-content: center; flex-direction: column; border-radius: 13px;">
