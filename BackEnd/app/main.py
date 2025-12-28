@@ -78,9 +78,10 @@ app = FastAPI(
 # ============================================================================
 # CORS MIDDLEWARE
 # ============================================================================
-# In production, we should restrict this to our frontend domain
-origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
-origins = origins_raw.split(",") if "," in origins_raw else [origins_raw]
+# En desarrollo permitimos localhost en varios puertos
+# En producción se debe configurar la variable ALLOWED_ORIGINS
+origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500,http://localhost:5501,http://127.0.0.1:5501,http://localhost:3000")
+origins = [origin.strip() for origin in origins_raw.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
@@ -89,6 +90,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Exception handler para asegurar que los errores también tengan headers CORS
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Ensure CORS headers are present even in error responses"""
+    origin = request.headers.get("origin")
+    headers = {}
+    
+    if origin and origin in origins:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=headers
+    )
 
 # Ensure static directory exists
 static_path = os.path.join(os.path.dirname(__file__), "static")

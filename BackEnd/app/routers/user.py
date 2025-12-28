@@ -307,6 +307,36 @@ def get_users_count(
     return {"total": count}
 
 
+@router.get("/total-points")
+def get_total_points(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Obtener la suma total de puntos (soul_balance) de todos los jugadores. **Solo administradores.**
+    
+    Este valor representa los "ingresos totales" del sistema basados en puntos.
+    """
+    from sqlalchemy import func
+    
+    # Sumar todos los soul_balance de todos los usuarios
+    total_points = db.query(func.sum(models.User.soul_balance)).scalar() or 0
+    
+    return {"total_points": total_points}
+
+
+@router.get("/recent", response_model=List[schemas.UserResponse])
+def get_recent_users(
+    limit: int = 5,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Obtener los usuarios registrados más recientes. **Solo administradores.**
+    """
+    return crud.get_recent_users(db, limit=limit)
+
+
 @router.get("/{user_id}", response_model=schemas.UserResponse)
 def read_user(
     user_id: int,

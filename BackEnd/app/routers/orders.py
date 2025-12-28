@@ -207,6 +207,33 @@ def get_orders_count(
     return {"total": count}
 
 
+@router.get("/stats")
+def get_orders_stats(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Obtener estadísticas de pedidos. **Solo administradores.**
+    """
+    return {
+        "total_orders": crud.get_orders_count(db),
+        "tickets_sold": crud.get_tickets_sold_count(db)
+    }
+
+
+@router.get("/recent", response_model=List[schemas.OrderWithItems])
+def get_recent_orders(
+    limit: int = 5,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_admin_user)
+):
+    """
+    Obtener los pedidos más recientes. **Solo administradores.**
+    """
+    # Usamos get_orders que ya ordena por fecha desc
+    return crud.get_orders(db, skip=0, limit=limit)
+
+
 @router.get("/{order_id}", response_model=schemas.OrderWithItems)
 def get_order(
     order_id: int,

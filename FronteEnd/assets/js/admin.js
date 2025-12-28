@@ -10,6 +10,8 @@ let currentAdmin = null;
 let usersCache = [];
 let productsCache = [];
 let ordersCache = [];
+let lastOrdersCount = 0; // Track order count for polling efficiency
+
 
 // Polling interval for real-time updates
 let ordersPollingInterval = null;
@@ -23,7 +25,42 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAdminSession();
     updateCurrentDate();
     startOrdersPolling();
+    setupKeyboardListeners();
 });
+
+function setupKeyboardListeners() {
+    // Buscador de usuarios
+    const searchUsers = document.getElementById('searchUsers');
+    if (searchUsers) {
+        searchUsers.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') filterUsers();
+        });
+    }
+
+    // Buscador de productos
+    const searchProducts = document.getElementById('searchProducts');
+    if (searchProducts) {
+        searchProducts.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') filterProducts();
+        });
+    }
+
+    // Buscador de pedidos
+    const searchOrders = document.getElementById('searchOrders');
+    if (searchOrders) {
+        searchOrders.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') filterOrders();
+        });
+    }
+
+    // Validación de tickets
+    const ticketInput = document.getElementById('ticketCodeInput');
+    if (ticketInput) {
+        ticketInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') validateTicket();
+        });
+    }
+}
 
 function updateCurrentDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -221,33 +258,40 @@ function removeImage(context) {
 
 async function refreshOrdersInBackground() {
     try {
-        const res = await fetch(`${API_URL}/orders/`, {
+        // Polling ligero: solo verificar contador
+        const res = await fetch(`${API_URL}/orders/stats`, {
             headers: { 'Authorization': `Bearer ${adminToken}` }
         });
 
         if (res.ok) {
-            const newOrders = await res.json();
+            const stats = await res.json();
+            const newCount = stats.total_orders;
 
             // Detectar nuevos pedidos
-            if (ordersCache.length > 0 && newOrders.length > ordersCache.length) {
-                const newCount = newOrders.length - ordersCache.length;
-                showNotification(`🆕 ${newCount} nuevo(s) pedido(s) recibido(s)!`, 'success');
-            }
+            if (newCount > lastOrdersCount) {
+                const diff = newCount - lastOrdersCount;
+                if (lastOrdersCount > 0) {
+                     showNotification(`🆕 ${diff} nuevo(s) pedido(s) recibido(s)!`, 'success');
+                }
+                
+                // Actualizar Dashboard si está activo
+                const dashboardSection = document.getElementById('section-dashboard');
+                if (dashboardSection && dashboardSection.classList.contains('active')) {
+                    document.getElementById('statOrders').textContent = stats.total_orders;
+                    document.getElementById('statTickets').textContent = stats.tickets_sold;
+                    
+                    // Actualizar recientes
+                    const recentRes = await fetch(`${API_URL}/orders/recent?limit=5`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+                    if (recentRes.ok) renderRecentOrders(await recentRes.json());
+                }
 
-            ordersCache = newOrders;
-
-            // Actualizar tabla si estamos en la sección de pedidos
-            const ordersSection = document.getElementById('section-orders');
-            if (ordersSection && ordersSection.classList.contains('active')) {
-                renderOrdersTable(ordersCache);
+                // Actualizar Tabla de Pedidos si está activa
+                const ordersSection = document.getElementById('section-orders');
+                if (ordersSection && ordersSection.classList.contains('active')) {
+                    loadOrders(); // Recargar tabla completa
+                }
             }
-
-            // Actualizar dashboard si está visible
-            const dashboardSection = document.getElementById('section-dashboard');
-            if (dashboardSection && dashboardSection.classList.contains('active')) {
-                document.getElementById('statOrders').textContent = ordersCache.length;
-                renderRecentOrders(ordersCache.slice(0, 5));
-            }
+            lastOrdersCount = newCount;
         }
     } catch (e) {
         console.warn('Error en polling de pedidos:', e);
@@ -320,43 +364,52 @@ function showNotification(message, type = 'info') {
 
 async function loadDashboardData() {
     try {
-        // Load stats in parallel
-        const [usersRes, ordersRes, productsRes] = await Promise.all([
-            fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
-            fetch(`${API_URL}/orders/`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
-            fetch(`${API_URL}/products/`)
+        console.time('Dashboard Load');
+        
+        // Load stats in parallel using optimized endpoints
+        const [usersCountRes, usersRecentRes, ordersStatsRes, ordersRecentRes, totalPointsRes] = await Promise.all([
+            fetch(`${API_URL}/users/count`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
+            fetch(`${API_URL}/users/recent?limit=5`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
+            fetch(`${API_URL}/orders/stats`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
+            fetch(`${API_URL}/orders/recent?limit=5`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
+            fetch(`${API_URL}/users/total-points`, { headers: { 'Authorization': `Bearer ${adminToken}` } })
         ]);
 
         // Users count
-        if (usersRes.ok) {
-            const users = await usersRes.json();
-            document.getElementById('statUsers').textContent = users.length;
-            renderRecentUsers(users.slice(-5).reverse());
+        if (usersCountRes.ok) {
+            const data = await usersCountRes.json();
+            document.getElementById('statUsers').textContent = data.total;
         }
 
-        // Orders count & revenue
-        if (ordersRes.ok) {
-            const orders = await ordersRes.json();
-            document.getElementById('statOrders').textContent = orders.length;
-
-            const revenue = orders
-                .filter(o => o.status === 'completed' || o.status === 'paid')
-                .reduce((sum, o) => sum + parseFloat(o.total), 0);
-            document.getElementById('statRevenue').textContent = `€${revenue.toFixed(2)}`;
-
-            // Count tickets sold
-            let ticketsSold = 0;
-            orders.forEach(o => {
-                if (o.items) {
-                    o.items.forEach(item => {
-                        if (item.product_type === 'ticket') ticketsSold += item.quantity;
-                    });
-                }
-            });
-            document.getElementById('statTickets').textContent = ticketsSold;
-
-            renderRecentOrders(orders.slice(-5).reverse());
+        // Recent Users
+        if (usersRecentRes.ok) {
+            const users = await usersRecentRes.json();
+            renderRecentUsers(users); // Already sorted desc by backend
         }
+
+        // Total Points (Ingresos Totales)
+        if (totalPointsRes.ok) {
+            const data = await totalPointsRes.json();
+            const totalPoints = data.total_points || 0;
+            document.getElementById('statRevenue').textContent = `${totalPoints.toLocaleString()} pts`;
+        }
+
+        // Orders Stats (Total & Tickets Sold)
+        if (ordersStatsRes.ok) {
+            const stats = await ordersStatsRes.json();
+            document.getElementById('statOrders').textContent = stats.total_orders;
+            document.getElementById('statTickets').textContent = stats.tickets_sold;
+            
+            lastOrdersCount = stats.total_orders; // Inicializar tracker
+        }
+
+        // Recent Orders
+        if (ordersRecentRes.ok) {
+            const orders = await ordersRecentRes.json();
+            renderRecentOrders(orders); // Already sorted desc by backend
+        }
+        
+        console.timeEnd('Dashboard Load');
 
     } catch (e) {
         console.error("Error loading dashboard data:", e);

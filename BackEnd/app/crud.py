@@ -24,6 +24,10 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]
     """Obtener lista de usuarios con paginación"""
     return db.query(models.User).offset(skip).limit(limit).all()
 
+def get_recent_users(db: Session, limit: int = 5) -> List[models.User]:
+    """Obtener usuarios recientes"""
+    return db.query(models.User).order_by(desc(models.User.created_at)).limit(limit).all()
+
 def get_users_count(db: Session) -> int:
     """Obtener el total de usuarios"""
     return db.query(models.User).count()
@@ -263,6 +267,13 @@ def get_orders_by_status(db: Session, status: str, skip: int = 0, limit: int = 1
 def get_orders_count(db: Session) -> int:
     """Obtener el total de pedidos"""
     return db.query(models.Order).count()
+
+def get_tickets_sold_count(db: Session) -> int:
+    """Obtener el total de tickets vendidos"""
+    # Contamos los items de orden que son tickets
+    # Dado que los tickets se desglosan en items individuales de cantidad 1, un count es suficiente.
+    # Si alguna vez cambiamos eso, deberíamos hacer sum(quantity).
+    return db.query(models.OrderItem).filter(models.OrderItem.product_type == 'ticket').count()
 
 def create_order(db: Session, order: schemas.OrderCreate, user_id: int) -> models.Order:
     """Crear nuevo pedido con sus items"""

@@ -31,7 +31,33 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchTickets();
     initCountdown();
     setupScrollEffects();
+    setupKeyboardListeners();
 });
+
+function setupKeyboardListeners() {
+    // Escuchar Enter en el modal de login/registro
+    const authInputs = ['usernameInput', 'emailInput', 'passwordInput'];
+    authInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleAuthSubmit();
+                }
+            });
+        }
+    });
+
+    // Escuchar Enter en el chat interactivo
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+}
 
 function setupScrollEffects() {
     const nav = document.getElementById('mainNav');
