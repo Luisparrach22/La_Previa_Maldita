@@ -903,38 +903,45 @@ body {
     border-color: var(--blood-red);
 }
 
-/* Memory */
+/* Memory Game Cards */
 .memory-card {
     height: 100px;
-    background: #222;
-    border: 2px solid #444;
+    background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
+    border: 2px solid var(--blood-red);
     border-radius: 8px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 2.5rem;
-    transition: transform 0.3s;
+    transition: all 0.3s ease;
     user-select: none;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .memory-card:hover {
     border-color: var(--bright-blood);
+    box-shadow: 0 0 15px rgba(187, 10, 30, 0.5);
 }
 
+/* Emoji oculto por defecto */
 .memory-card .front {
     display: none;
 }
 
+/* Cuando se voltea la carta, muestra el emoji */
 .memory-card.flipped {
-    background: #440000;
-    transform: rotateY(180deg);
+    background: #222;
+    border-color: var(--spectral-green);
 }
 
 .memory-card.flipped .front {
     display: block;
+    animation: bounce 0.3s ease;
 }
 
-.memory-card.flipped .back {
-    display: none;
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }

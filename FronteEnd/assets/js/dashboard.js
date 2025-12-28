@@ -74,31 +74,175 @@ function switchTab(tabId) {
             item.classList.add('active');
         }
     });
+
+    if (tabId === 'games') {
+        startMemoryGame();
+    }
 }
 
 
 
-/* ==================== GAMES LOGIC ==================== */
+/* ==================== GAMES LOGIC (MEMORY ONLY) ==================== */
+
+let memoryInterval = null;
+let memoryPeekTimeout = null;
+let memorySeconds = 0;
+let memoryPaused = false;
+let memoryGameActive = false;
 
 // --- Game Navigation & Cleanup ---
-let activeGameInterval = null;
-let activeGameTimeout = null;
 
 function stopActiveGames() {
-    // Stop Whack-a-Ghost
-    clearInterval(activeGameInterval);
-    clearTimeout(activeGameTimeout);
-    timeUp = true;
-    
-    // Reset Views in Games Tab if needed
-    // But mainly stop the "engine" of the games
+    // Stop Memory Timer
+    if (memoryInterval) {
+        clearInterval(memoryInterval);
+        memoryInterval = null;
+    }
+    if (memoryPeekTimeout) {
+        clearTimeout(memoryPeekTimeout);
+        memoryPeekTimeout = null;
+    }
+    memoryGameActive = false;
 }
 
-function showGame(gameId) {
-    stopActiveGames(); // Stop previous game loop
-    document.getElementById('game-intro').classList.add('hidden');
-    document.querySelectorAll('.game-view').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`game-${gameId}`).classList.remove('hidden');
+// Hook called when switching tabs
+// We can auto-start or just reset. Let's reset but not auto-start if we want to wait for user?
+// Or better, if the user clicks "Games", we start the game fresh?
+// For now, `switchTab` calls this.
+
+// --- Memory Game Logic ---
+const memoryIcons = ['💀', '🧛', '🧟', '👻', '🕸️', '⚰️', '🩸', '🎃'];
+let memoryCards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let moves = 0;
+let lockBoard = false;
+
+function startMemoryGame() {
+    stopActiveGames(); // Stop any running timers
+    
+    // Reset UI
+    const grid = document.getElementById('memory-grid');
+    grid.innerHTML = '';
+    document.getElementById('memory-paused-overlay').style.display = 'none';
+    document.getElementById('btn-pause-memory').textContent = "Pausar";
+    
+    // Reset Variables
+    flippedCards = [];
+    matchedPairs = 0;
+    moves = 0;
+    lockBoard = false; // Allow playing from start
+    memorySeconds = 0;
+    memoryPaused = false;
+    memoryGameActive = true;
+    
+    // Update Stats
+    document.getElementById('memory-moves').textContent = moves;
+    updateTimerDisplay();
+    
+    // Setup Cards
+    memoryCards = [...memoryIcons, ...memoryIcons]; 
+    memoryCards.sort(() => 0.5 - Math.random());
+    
+    memoryCards.forEach((icon, index) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card'; // Start hidden (no flipped class)
+        card.dataset.index = index;
+        card.dataset.icon = icon;
+        // Front=Icon (revealed), Back=Empty (covered/hidden with red bg from CSS)
+        card.innerHTML = `<div class="front">${icon}</div>`;
+        card.onclick = () => flipCard(card);
+        grid.appendChild(card);
+    });
+
+    // Start Timer immediately
+    startMemoryTimer();
+}
+
+function startMemoryTimer() {
+    if (memoryInterval) clearInterval(memoryInterval);
+    memoryInterval = setInterval(() => {
+        if (!memoryPaused) {
+            memorySeconds++;
+            updateTimerDisplay();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const min = Math.floor(memorySeconds / 60).toString().padStart(2, '0');
+    const sec = (memorySeconds % 60).toString().padStart(2, '0');
+    const timerEl = document.getElementById('memory-time');
+    if(timerEl) timerEl.textContent = `${min}:${sec}`;
+}
+
+function togglePauseMemory() {
+    if (!memoryGameActive) return; // Can't pause if not started
+
+    memoryPaused = !memoryPaused;
+    const overlay = document.getElementById('memory-paused-overlay');
+    const btn = document.getElementById('btn-pause-memory');
+    
+    if (memoryPaused) {
+        overlay.style.display = 'flex';
+        btn.textContent = "Continuar";
+        lockBoard = true; // Prevent clicks while paused
+    } else {
+        overlay.style.display = 'none';
+        btn.textContent = "Pausar";
+        lockBoard = false; // Allow clicks
+    }
+}
+
+function flipCard(card) {
+    if (lockBoard || memoryPaused) return;
+    if (card === flippedCards[0]) return; // clicking same card
+    if (card.classList.contains('flipped')) return; // already revealed
+    
+    card.classList.add('flipped'); // Reveal (Show Back/Icon)
+    flippedCards.push(card);
+    
+    if (flippedCards.length === 2) {
+        moves++;
+        document.getElementById('memory-moves').textContent = moves;
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    lockBoard = true;
+    const [c1, c2] = flippedCards;
+    
+    console.log(`🎯 Comparando: ${c1.dataset.icon} vs ${c2.dataset.icon}`);
+    
+    if (c1.dataset.icon === c2.dataset.icon) {
+        console.log('✅ ¡Coinciden!');
+        matchedPairs++;
+        flippedCards = [];
+        lockBoard = false; // unlock immediately
+        
+        if (matchedPairs === memoryCards.length / 2) { 
+            clearInterval(memoryInterval); // Stop timer
+            setTimeout(() => {
+                const bonus = Math.max(0, 300 - memorySeconds); // Time bonus
+                const movesBonus = Math.max(0, 25 - moves);
+                const points = 10 + bonus + movesBonus;
+                
+                // Submit score handles alert
+                submitScore(points, 'memory');
+                alert(`¡Victoria! \nTiempo: ${document.getElementById('memory-time').textContent}\nMovimientos: ${moves}\nGanaste ${points} Almas.`);
+            }, 500);
+        }
+    } else {
+        console.log('❌ No coinciden - ocultando en 1 segundo...');
+        setTimeout(() => {
+            console.log('🔄 Ocultando cartas ahora');
+            c1.classList.remove('flipped'); // Hide again (Show Front/Cover)
+            c2.classList.remove('flipped'); // Hide again
+            flippedCards = [];
+            lockBoard = false;
+        }, 1000);
+    }
 }
 
 // --- Submit Score helper ---
@@ -109,7 +253,7 @@ async function submitScore(points, gameType) {
             points: points,
             game_type: gameType,
             level_reached: 1,
-            time_played_seconds: 0,
+            time_played_seconds: memorySeconds,
             device_type: "web"
         };
         
@@ -125,251 +269,11 @@ async function submitScore(points, gameType) {
         if (res.ok) {
             console.log("Puntaje guardado!");
             checkSession(); // Refresh balance
-            
-            // Custom alert styling could be better, but standard is fine for now
-            alert(`☠️ ¡Ganaste ${points} Almas! Tu saldo ha aumentado.`);
         } else {
             console.warn("No se pudo guardar el puntaje");
         }
     } catch (e) {
         console.error("Error submitting score", e);
-    }
-}
-
-// --- Whack-a-Ghost ---
-let scoreWhack = 0;
-let lastHole;
-let timeUp = false;
-
-function randomTime(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
-}
-
-function randomHole(holes) {
-    const idx = Math.floor(Math.random() * holes.length);
-    const hole = holes[idx];
-    if (hole === lastHole) return randomHole(holes);
-    lastHole = hole;
-    return hole;
-}
-
-function peep() {
-    if (timeUp) return;
-    const holes = document.querySelectorAll('.whack-hole');
-    const time = randomTime(500, 1500); 
-    const hole = randomHole(holes);
-    if(!hole) return;
-    
-    hole.classList.add('up');
-    
-    activeGameTimeout = setTimeout(() => {
-        hole.classList.remove('up');
-        // Clean hit status for next time
-        const ghost = hole.querySelector('.whack-ghost');
-        if(ghost) {
-             ghost.style.filter = "";
-             ghost.dataset.hit = "";
-        }
-        if (!timeUp) peep();
-    }, time);
-}
-
-function startGameWhackLogic() {
-    stopActiveGames(); // Clear any existing timers
-    
-    const grid = document.getElementById('whack-grid');
-    grid.innerHTML = '';
-    for(let i=0; i<6; i++) {
-        const hole = document.createElement('div');
-        hole.className = 'whack-hole';
-        const ghost = document.createElement('div');
-        ghost.className = 'whack-ghost';
-        
-        // Use mousedown/touchstart for better responsiveness
-        const hitHandler = function(e) {
-             if(!e.isTrusted) return; 
-             if(this.parentNode.classList.contains('up')) {
-                 if(!this.dataset.hit) {
-                    scoreWhack++;
-                    this.dataset.hit = "true";
-                    this.style.filter = "brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5)"; // blood effect
-                    document.getElementById('whack-score').textContent = scoreWhack;
-                    
-                    // Force down immediately after hit
-                    setTimeout(() => {
-                        this.parentNode.classList.remove('up');
-                    }, 150);
-                 }
-             }
-        };
-        
-        ghost.addEventListener('mousedown', hitHandler);
-        ghost.addEventListener('touchstart', hitHandler);
-        
-        hole.appendChild(ghost);
-        grid.appendChild(hole);
-    }
-
-    document.getElementById('whack-score').textContent = 0;
-    document.getElementById('whack-time').textContent = 15;
-    scoreWhack = 0;
-    timeUp = false;
-    document.getElementById('btn-start-whack').disabled = true;
-    
-    peep();
-    
-    let timeLeft = 15;
-    activeGameInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById('whack-time').textContent = timeLeft;
-        if(timeLeft <= 0) {
-            clearInterval(activeGameInterval);
-            timeUp = true;
-            document.getElementById('btn-start-whack').disabled = false;
-            // Clear grid state
-            document.querySelectorAll('.whack-hole').forEach(h => h.classList.remove('up'));
-            
-            if(scoreWhack > 0) {
-                setTimeout(() => submitScore(scoreWhack, 'ghost_hunt'), 500);
-            }
-        }
-    }, 1000);
-}
-
-function startWhackGame() {
-    startGameWhackLogic();
-}
-
-// --- Trivia Terror ---
-const triviaQuestions = [
-    { q: "¿Quién es el asesino en 'Halloween'?", a: ["Jason Voorhees", "Freddy Krueger", "Michael Myers", "Leatherface"], correct: 2 },
-    { q: "¿En qué año se estrenó 'El Exorcista'?", a: ["1973", "1980", "1968", "1990"], correct: 0 },
-    { q: "¿Qué hotel aparece en 'El Resplandor'?", a: ["Bates Motel", "Overlook Hotel", "Cecil Hotel", "Hotel California"], correct: 1 },
-    { q: "¿Qué muñeco poseído aterrorizó al mundo?", a: ["Chucky", "Annabelle", "Billy", "Brahms"], correct: 0 },
-    { q: "¿Cómo se llama el payaso de 'IT'?", a: ["Pennywise", "Joker", "Pogo", "Twisty"], correct: 0 },
-    { q: "¿Cuál es la regla #1 para sobrevivir en Zombieland?", a: ["Cardio", "Doble Tap", "Cinturón de seguridad", "Viajar ligero"], correct: 0 },
-    { q: "¿Qué película popularizó el metraje encontrado (found footage)?", a: ["REC", "Paranormal Activity", "The Blair Witch Project", "Cloverfield"], correct: 2 }
-];
-
-function startTriviaGame() {
-    document.getElementById('trivia-start-screen').classList.add('hidden');
-    document.getElementById('trivia-play-screen').classList.remove('hidden');
-    nextQuestion();
-}
-
-function nextQuestion() {
-    const qIndex = Math.floor(Math.random() * triviaQuestions.length);
-    const q = triviaQuestions[qIndex];
-    
-    document.getElementById('trivia-question').textContent = q.q;
-    const opts = document.getElementById('trivia-options');
-    opts.innerHTML = '';
-    
-    q.a.forEach((ans, idx) => {
-        const btn = document.createElement('div');
-        btn.className = 'trivia-option';
-        btn.textContent = ans;
-        btn.onclick = () => checkTrivia(btn, idx, q.correct);
-        opts.appendChild(btn);
-    });
-}
-
-function checkTrivia(btn, idx, correctIdx) {
-    if(document.querySelector('.trivia-option.correct') || document.querySelector('.trivia-option.wrong')) return; 
-
-    if(idx === correctIdx) {
-        btn.classList.add('correct');
-        setTimeout(() => {
-            submitScore(5, 'trivia');
-            document.getElementById('trivia-play-screen').classList.add('hidden');
-            document.getElementById('trivia-start-screen').classList.remove('hidden');
-            document.querySelector('#trivia-start-screen h3').innerHTML = "¡Correcto!<br>Ganaste 5 Almas.";
-        }, 1500);
-    } else {
-        btn.classList.add('wrong');
-        const allOpts = document.querySelectorAll('.trivia-option');
-        allOpts[correctIdx].classList.add('correct');
-        setTimeout(() => {
-            document.getElementById('trivia-play-screen').classList.add('hidden');
-            document.getElementById('trivia-start-screen').classList.remove('hidden');
-            document.querySelector('#trivia-start-screen h3').innerHTML = "Fallaste.<br>Tu alma sufre.";
-        }, 1500);
-    }
-}
-
-// --- Memory ---
-const memoryIcons = ['💀', '🧛', '🧟', '👻', '🕸️', '⚰️', '🩸', '🎃'];
-let memoryCards = [];
-let flippedCards = [];
-let matchedPairs = 0;
-let moves = 0;
-let lockBoard = false;
-
-function startMemoryGame() {
-    const grid = document.getElementById('memory-grid');
-    grid.innerHTML = '';
-    
-    // Reset State
-    flippedCards = [];
-    matchedPairs = 0;
-    moves = 0;
-    lockBoard = false;
-    
-    memoryCards = [...memoryIcons, ...memoryIcons]; 
-    memoryCards.sort(() => 0.5 - Math.random());
-    
-    document.getElementById('memory-moves').textContent = moves;
-    
-    memoryCards.forEach((icon, index) => {
-        const card = document.createElement('div');
-        card.className = 'memory-card';
-        card.dataset.index = index;
-        card.dataset.icon = icon;
-        card.innerHTML = `<span class="front">${icon}</span><span class="back" style="color: #666; font-size: 1.5rem;">🦇</span>`;
-        card.onclick = () => flipCard(card);
-        grid.appendChild(card);
-    });
-}
-
-function flipCard(card) {
-    if(lockBoard) return;
-    if(card === flippedCards[0]) return; // clicking same card
-    if(card.classList.contains('flipped')) return; // already matched/flipped
-    
-    card.classList.add('flipped');
-    flippedCards.push(card);
-    
-    if(flippedCards.length === 2) {
-        moves++;
-        document.getElementById('memory-moves').textContent = moves;
-        checkMatch();
-    }
-}
-
-function checkMatch() {
-    lockBoard = true;
-    const [c1, c2] = flippedCards;
-    
-    if(c1.dataset.icon === c2.dataset.icon) {
-        matchedPairs++;
-        flippedCards = [];
-        lockBoard = false; // unlock immediately
-        
-        if(matchedPairs === memoryIcons.length) {
-            setTimeout(() => {
-                const bonus = Math.max(0, 25 - moves); 
-                const points = 15 + bonus;
-                submitScore(points, 'memory');
-                alert(`¡Memoria Perfecta! Ganaste ${points} Almas.`);
-            }, 500);
-        }
-    } else {
-        setTimeout(() => {
-            c1.classList.remove('flipped');
-            c2.classList.remove('flipped');
-            flippedCards = [];
-            lockBoard = false;
-        }, 1000);
     }
 }
 
