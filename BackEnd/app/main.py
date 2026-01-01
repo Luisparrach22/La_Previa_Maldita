@@ -205,7 +205,7 @@ def seed_database():
                 name="Máscara Macabra",
                 description="Oculta tu rostro con esta terrorífica máscara artesanal.",
                 price=20.00,
-                type="item",
+                type="merchandise",
                 stock=30,
                 image_url="mask.png"
             ),
@@ -213,7 +213,7 @@ def seed_database():
                 name="Elixir de Vida",
                 description="Bebida energética roja con un toque misterioso.",
                 price=5.00,
-                type="item",
+                type="drink",
                 stock=100,
                 image_url="elixir.png"
             ),
@@ -221,7 +221,7 @@ def seed_database():
                 name="Capa de Vampiro",
                 description="Capa negra con forro rojo satinado. Talla única.",
                 price=35.00,
-                type="item",
+                type="merchandise",
                 stock=25,
                 image_url="cape.png"
             ),
@@ -229,7 +229,7 @@ def seed_database():
                 name="Set de Maquillaje Zombie",
                 description="Kit completo para transformarte en un no-muerto.",
                 price=15.00,
-                type="item",
+                type="merchandise",
                 stock=40,
                 image_url="makeup.png"
             ),
@@ -237,7 +237,7 @@ def seed_database():
                 name="Sangre Falsa Premium",
                 description="Sangre artificial de alta calidad, lavable y no tóxica.",
                 price=8.00,
-                type="item",
+                type="merchandise",
                 stock=60,
                 image_url="blood.png"
             ),
