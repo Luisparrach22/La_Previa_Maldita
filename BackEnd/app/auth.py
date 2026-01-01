@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Configuración de Seguridad ---
-# Usamos os.getenv para leer del archivo .env. Si no existe, usamos valores por defecto (INSEGURO para prod)
-SECRET_KEY = os.getenv("SECRET_KEY")
+# Usamos os.getenv para leer del archivo .env.
+SECRET_KEY = os.getenv("SECRET_KEY", "maldita_secreta_key_2025_horror_666") 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080)) # 7 days default
 
