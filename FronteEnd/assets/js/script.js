@@ -1,7 +1,9 @@
 // ==========================================
 // CONFIGURACIÓN Y ESTADO GLOBAL
 // ==========================================
-const API_URL = "http://localhost:8000";
+// Detectar entorno: Si estamos en localhost usamos el puerto 8000, si no, la URL de producción
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = IS_LOCAL ? "http://localhost:8000" : "https://<TU-BACKEND-EN-RAILWAY>.up.railway.app";
 let currentUser = null;
 let cart = [];
 let gameScore = 0;

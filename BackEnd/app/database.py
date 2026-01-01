@@ -5,16 +5,21 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-# 1. Cargar Variables de Entorno
+# 1. Cargar Variables de Entorno (solo si existe el archivo .env, útil para local)
 env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
 
-# Obtener URL de conexión MySQL
+# Obtener URL de conexión MySQL (la buscará primero en las variables de sistema de Railway)
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not SQLALCHEMY_DATABASE_URL:
-    # Fallback sólo si no hay variable, pero esperamos que haya para MySQL
-    raise ValueError("DATABASE_URL no encontrada en .env")
+    # Si no hay URL, intentamos construirla con otras variables comunes de Railway o fallamos
+    print("⚠️ DATABASE_URL no encontrada, verificando alternativas...")
+    SQLALCHEMY_DATABASE_URL = os.getenv("MYSQL_URL") # Otra común en Railway
+
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("❌ Error Crítico: No se encontró DATABASE_URL ni MYSQL_URL en el entorno.")
 
 # 2. Configurar Engine (MySQL no necesita check_same_thread)
 engine = create_engine(
