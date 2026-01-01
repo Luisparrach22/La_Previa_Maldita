@@ -26,6 +26,11 @@ function throttle(func, limit) {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     console.log("👻 La Previa Maldita SCRIPT v2 loaded");
+    
+    // Asegurar que el video de fondo esté silenciado
+    const heroVideo = document.querySelector('.hero-video');
+    if (heroVideo) heroVideo.muted = true;
+
     checkAuthSession();
     fetchProducts();
     fetchTickets();
@@ -965,13 +970,20 @@ function addMessage(text, sender) {
 }
 
 function openVideoModal() {
-    document.getElementById('videoModal').classList.remove('hidden');
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('trailerFrame');
+    if (iframe && iframe.dataset.src) {
+        iframe.src = iframe.dataset.src;
+    }
+    modal.classList.remove('hidden');
 }
 
 function closeVideoModal() {
     document.getElementById('videoModal').classList.add('hidden');
     const iframe = document.getElementById('trailerFrame');
-    iframe.src = iframe.src;
+    if (iframe) {
+        iframe.src = ''; // Detener video y sonido completamente
+    }
 }
 
 function showNotification(text) {
