@@ -388,8 +388,16 @@ async function loadDashboardData() {
         // Total Points (Ingresos Totales)
         if (totalPointsRes.ok) {
             const data = await totalPointsRes.json();
-            const totalPoints = data.total_points || 0;
-            document.getElementById('statRevenue').textContent = `${totalPoints.toLocaleString()} pts`;
+            const totalBilled = data.total_billed || 0;
+            const totalCirculation = data.total_in_circulation || 0;
+            
+            // Ingresos por Ventas (lo que usuarios han gastado)
+            const billedEl = document.getElementById('statBilled');
+            if (billedEl) billedEl.textContent = `${totalBilled.toLocaleString()} pts`;
+            
+            // Puntos en Circulación (lo que usuarios tienen disponible)
+            const circEl = document.getElementById('statCirculation');
+            if (circEl) circEl.textContent = `${totalCirculation.toLocaleString()} pts`;
         }
 
         // Orders Stats (Total & Tickets Sold)

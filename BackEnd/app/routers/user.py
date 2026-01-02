@@ -313,16 +313,28 @@ def get_total_points(
     current_user: models.User = Depends(dependencies.get_current_admin_user)
 ):
     """
-    Obtener la suma total de puntos (soul_balance) de todos los jugadores. **Solo administradores.**
+    Obtener estadísticas completas de la economía de puntos. **Solo administradores.**
     
-    Este valor representa los "ingresos totales" del sistema basados en puntos.
+    Retorna:
+    - total_in_circulation: Suma de soul_balance de todos los usuarios (puntos disponibles)
+    - total_billed: Suma de todos los puntos gastados en compras (ingresos por ventas)
     """
     from sqlalchemy import func
     
-    # Sumar todos los soul_balance de todos los usuarios
-    total_points = db.query(func.sum(models.User.soul_balance)).scalar() or 0
+    # Puntos en circulación (balance actual de todos los usuarios)
+    total_in_circulation = db.query(func.sum(models.User.soul_balance)).scalar() or 0
     
-    return {"total_points": total_points}
+    # Puntos facturados (gastados en compras - suma de totales de órdenes pagadas/confirmadas)
+    # Solo contamos órdenes que fueron exitosas (confirmed, paid, completed)
+    total_billed = db.query(func.sum(models.Order.total)).filter(
+        models.Order.status.in_(['confirmed', 'paid', 'completed'])
+    ).scalar() or 0
+    
+    return {
+        "total_points": int(total_in_circulation),  # Mantener compatibilidad
+        "total_in_circulation": int(total_in_circulation),
+        "total_billed": int(total_billed)
+    }
 
 
 @router.get("/recent", response_model=List[schemas.UserResponse])

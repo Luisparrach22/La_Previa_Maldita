@@ -8,6 +8,7 @@ export function getCurrentUser() {
 }
 
 export function updateSoulBalance(amount) {
+    // Desktop
     const el = document.getElementById('userSoulBalance');
     if (el) {
         el.textContent = amount;
@@ -15,20 +16,40 @@ export function updateSoulBalance(amount) {
         el.parentElement.classList.add('pulse-anim');
         setTimeout(() => el.parentElement.classList.remove('pulse-anim'), 1000);
     }
+    // Mobile
+    const mobileEl = document.getElementById('mobileSoulBalance');
+    if (mobileEl) mobileEl.textContent = amount;
 }
 
 export function updateUIForUser(user) {
+    // Desktop UI
+    const authActions = document.getElementById('authActions');
+    const authUser = document.getElementById('authUser');
+    
+    // Mobile UI
+    const mobileAuthActions = document.getElementById('mobileAuthActions');
+    const mobileUserSection = document.getElementById('mobileUserSection');
+    
     if (!user) {
-        // Reset UI if user is null (fallback)
-        document.getElementById('authActions').classList.remove('hidden');
-        document.getElementById('authUser').classList.add('hidden');
+        // Reset UI if user is null (fallback) - Show login buttons
+        if (authActions) authActions.classList.remove('hidden');
+        if (authUser) authUser.classList.add('hidden');
+        if (mobileAuthActions) mobileAuthActions.classList.remove('hidden');
+        if (mobileUserSection) mobileUserSection.classList.add('hidden');
         return;
     }
-    document.getElementById('authActions').classList.add('hidden');
-    document.getElementById('authUser').classList.remove('hidden');
-    document.getElementById('usernameSpan').textContent = user.username;
+    
+    // User is logged in - Show user info, hide login buttons
+    if (authActions) authActions.classList.add('hidden');
+    if (authUser) authUser.classList.remove('hidden');
+    if (mobileAuthActions) mobileAuthActions.classList.add('hidden');
+    if (mobileUserSection) mobileUserSection.classList.remove('hidden');
+    
+    // Update username
+    const usernameSpan = document.getElementById('usernameSpan');
+    if (usernameSpan) usernameSpan.textContent = user.username;
 
-    // Update Soul Balance
+    // Update Soul Balance (desktop and mobile)
     updateSoulBalance(user.soul_balance || 0);
 }
 

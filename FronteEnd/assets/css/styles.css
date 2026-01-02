@@ -803,10 +803,63 @@ body {
     display: flex;
 }
 
+.mobile-menu .mobile-auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+    margin-top: 10px;
+}
+
+.mobile-menu .mobile-auth-actions button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+}
+
+.mobile-menu .mobile-user-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+    margin-top: 10px;
+}
+
+.mobile-menu .mobile-soul-balance {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    color: var(--spectral-green);
+    padding: 10px;
+    background: rgba(0, 255, 65, 0.1);
+    border-radius: 8px;
+}
+
+.mobile-menu .mobile-profile-link {
+    display: block;
+    text-align: center;
+    padding: 15px;
+    background: rgba(187, 10, 30, 0.2);
+    border: 1px solid var(--blood-red);
+    border-radius: 8px;
+    color: var(--blood-red);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.mobile-menu .logout-mobile {
+    width: 100%;
+    padding: 12px;
+}
+
 @media (max-width: 900px) {
 
     .nav-links,
-    .nav-auth {
+    .nav-auth,
+    .nav-user {
         display: none;
     }
 

@@ -97,6 +97,21 @@
         <a href="#tickets" onclick="toggleMobileNav()">Tickets</a>
         <a href="#store" onclick="toggleMobileNav()">Tienda</a>
         <a href="#games" onclick="toggleMobileNav()">Juegos</a>
+        
+        <!-- Auth Actions for Mobile (visible when NOT logged in) -->
+        <div class="mobile-auth-actions" id="mobileAuthActions">
+            <button class="btn-ghost" onclick="toggleModal('login'); toggleMobileNav();">Ingresar</button>
+            <button class="btn-blood" onclick="toggleModal('register'); toggleMobileNav();">Unirse</button>
+        </div>
+        
+        <!-- User Section for Mobile (visible when logged in) -->
+        <div class="mobile-user-section hidden" id="mobileUserSection">
+            <div class="mobile-soul-balance">
+                <span>👻</span> <span id="mobileSoulBalance">0</span> Almas
+            </div>
+            <a href="pages/user_page.html" class="mobile-profile-link" onclick="toggleMobileNav();">👤 Mi Santuario</a>
+            <button class="btn-ghost logout-mobile" onclick="logout(); toggleMobileNav();">Cerrar Sesión</button>
+        </div>
     </div>
 
     <!-- Hero Section -->
