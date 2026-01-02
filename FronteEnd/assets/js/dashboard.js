@@ -406,7 +406,12 @@ function renderTicketsFromOrders(orders) {
             const productType = item.product_type || item.product?.type;
             if (productType === 'ticket') {
                 hasTickets = true;
-                const ticketId = item.ticket_code || `TKT-${order.id}-${item.id}`;
+                // IMPORTANTE: Usar SOLO el código real del backend. No inventar códigos.
+                const ticketId = item.ticket_code; 
+                if (!ticketId) {
+                    console.error("Ticket sin código:", item);
+                    return; // No mostrar tickets corruptos o pendientes
+                }
                 const ticketName = item.product_name || item.product?.name || 'Ticket';
 
                 const card = document.createElement('div');
@@ -454,18 +459,33 @@ function translateStatus(status) {
 // ==========================================
 
 function openTicketModal(title, id, status) {
+    // Forzar recarga de datos al abrir el modal para ver estado actualizado
+    document.getElementById('modalTicketStatus').innerHTML = '<span class="loading-dots">Cargando...</span>';
+    
+    // Fetch latest status
+    fetch(`${API_URL}/orders/tickets/status/${encodeURIComponent(id)}`, {
+         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+         if(data.status) updateTicketModalStatus(data.status);
+    })
+    .catch(() => updateTicketModalStatus(status)); // Fallback to passed status
+
     document.getElementById('modalTicketTitle').textContent = title.toUpperCase();
     document.getElementById('modalTicketID').textContent = id;
 
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${id}`;
     document.getElementById('modalTicketQR').src = qrUrl;
 
+    document.getElementById('ticketModal').classList.remove('hidden');
+}
+
+function updateTicketModalStatus(status) {
     const statusEl = document.getElementById('modalTicketStatus');
     const statusText = status === 'valid' ? 'VÁLIDO' : status === 'used' ? 'USADO' : translateStatus(status).toUpperCase();
     statusEl.textContent = statusText;
     statusEl.className = `status-badge ${status}`;
-
-    document.getElementById('ticketModal').classList.remove('hidden');
 }
 
 function closeTicketModal() {

@@ -376,3 +376,31 @@ def mark_ticket_used(
         "used_at": ticket.ticket_used_at,
         "checked_by": current_user.username
     }
+
+@router.get("/tickets/status/{ticket_code}")
+def get_ticket_status(
+    ticket_code: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(dependencies.get_current_user)
+):
+    """
+    Obtener el estado de un ticket específico. Permite al usuario consultar el estado.
+    """
+    ticket = crud.get_ticket_by_code(db, ticket_code)
+    
+    if not ticket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket no encontrado"
+        )
+    
+    # Opcional: Validar que el ticket pertenezca a una orden del usuario
+    order = crud.get_order(db, ticket.order_id)
+    if not order or order.user_id != current_user.id:
+        # Por seguridad, no revelar si existe o no si no es dueño
+         raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket no encontrado"
+        )
+
+    return {"status": ticket.ticket_status}
