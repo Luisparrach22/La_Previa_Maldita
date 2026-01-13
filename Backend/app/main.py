@@ -78,9 +78,11 @@ app = FastAPI(
 # ============================================================================
 # CORS MIDDLEWARE
 # ============================================================================
+from .config import settings
+
 # En desarrollo permitimos localhost en varios puertos
 # En producción se debe configurar la variable ALLOWED_ORIGINS
-origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500,http://localhost:5501,http://127.0.0.1:5501,http://localhost:3000")
+origins_raw = settings.ALLOWED_ORIGINS
 origins = [origin.strip() for origin in origins_raw.split(",")]
 
 app.add_middleware(

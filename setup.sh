@@ -22,7 +22,7 @@ echo ""
 
 # Backend Setup
 echo "📦 Configurando Backend..."
-cd BackEnd
+cd Backend
 
 if [ ! -d "venv" ]; then
     echo "   Creando entorno virtual..."
@@ -47,7 +47,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 GOOGLE_CLIENT_ID=optional_google_client_id
 EOF
     echo ""
-    echo "   ⚠️  IMPORTANTE: Edita BackEnd/.env con tus credenciales de MySQL"
+    echo "   ⚠️  IMPORTANTE: Edita Backend/.env con tus credenciales de MySQL"
     echo "      Usuario y contraseña actuales: root:password"
     echo ""
 fi
@@ -57,7 +57,7 @@ cd ..
 echo "✅ Configuración completa!"
 echo ""
 echo "📝 Próximos pasos:"
-echo "   1. Edita BackEnd/.env con tus credenciales de MySQL"
+echo "   1. Edita Backend/.env con tus credenciales de MySQL"
 echo "   2. Crea la base de datos: mysql -u root -p -e 'CREATE DATABASE IF NOT EXISTS la_previa_db;'"
 echo "   3. Ejecuta: ./start_dev.sh"
 echo ""

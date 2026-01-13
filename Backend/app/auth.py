@@ -2,16 +2,12 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from .config import settings
 
 # --- Configuración de Seguridad ---
-# Usamos os.getenv para leer del archivo .env.
-SECRET_KEY = os.getenv("SECRET_KEY", "maldita_secreta_key_2025_horror_666") 
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080)) # 7 days default
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 

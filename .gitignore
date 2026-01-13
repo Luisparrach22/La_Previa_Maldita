@@ -143,8 +143,8 @@ credentials/
 # ============================================================================
 # UPLOADS Y ARCHIVOS DE USUARIO
 # ============================================================================
-BackEnd/app/static/uploads/*
-!BackEnd/app/static/uploads/.gitkeep
+Backend/app/static/uploads/*
+!Backend/app/static/uploads/.gitkeep
 
 # ============================================================================
 # ESPECÍFICOS DEL PROYECTO
