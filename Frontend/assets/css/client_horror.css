@@ -842,8 +842,18 @@ body {
 
 @media (max-width: 768px) {
     .shop-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Smaller cards for mobile */
         gap: 15px;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-content {
+        padding-bottom: 100px; /* Space for fixed bottom sidebar */
+    }
+    
+    .shop-grid {
+        grid-template-columns: 1fr; /* Full width cards on very small screens */
     }
 }
 
@@ -904,8 +914,22 @@ body {
 }
 
 /* Memory Game Cards */
+.memory-grid-user {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+@media (max-width: 500px) {
+    .memory-grid-user {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .memory-card {
-    height: 100px;
+    height: 100px; /* Reduced for dashboard */
     background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
     border: 2px solid var(--blood-red);
     border-radius: 8px;
@@ -913,7 +937,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     transition: all 0.3s ease;
     user-select: none;
     position: relative;

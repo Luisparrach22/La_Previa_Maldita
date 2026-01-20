@@ -43,13 +43,17 @@ export function setupScrollEffects() {
 }
 
 export function initCountdown() {
-    const targetDate = new Date('October 31, 2025 00:00:00').getTime();
+    // Establecer el objetivo al final del año actual
+    const currentYear = new Date().getFullYear();
+    const targetDate = new Date(`December 31, ${currentYear} 23:59:59`).getTime();
     
     function update() {
         const now = new Date().getTime();
-        const difference = targetDate - now;
+        let difference = targetDate - now;
 
-        // If explicitly set elements exist
+        // Si la fecha ya pasó, el contador se queda en cero
+        if (difference < 0) difference = 0;
+
         const d = document.getElementById('days');
         const h = document.getElementById('hours');
         const m = document.getElementById('minutes');
@@ -61,7 +65,8 @@ export function initCountdown() {
             const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-            d.innerText = days < 10 ? '0' + days : days;
+            // Formatear con ceros a la izquierda
+            d.innerText = days; // Los días pueden ser más de 2 dígitos
             h.innerText = hours < 10 ? '0' + hours : hours;
             m.innerText = minutes < 10 ? '0' + minutes : minutes;
             s.innerText = seconds < 10 ? '0' + seconds : seconds;
