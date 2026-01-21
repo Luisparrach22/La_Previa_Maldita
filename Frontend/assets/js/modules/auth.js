@@ -40,7 +40,7 @@ export function updateUIForUser(user) {
     }
     
     // User is logged in - Show user info, hide login buttons
-    if (authActions) authActions.classList.add('hidden');
+    if (authActions && authUser) authActions.classList.add('hidden');
     if (authUser) authUser.classList.remove('hidden');
     if (mobileAuthActions) mobileAuthActions.classList.add('hidden');
     if (mobileUserSection) mobileUserSection.classList.remove('hidden');
@@ -274,4 +274,23 @@ export function setupSessionSync() {
             checkAuthSession(false, false);
         }
     });
+}
+
+export function setupAuthListeners() {
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleModal('login');
+        });
+    }
+
+    if (registerBtn) {
+        registerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleModal('register');
+        });
+    }
 }

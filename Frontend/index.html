@@ -56,32 +56,11 @@
             <li><a href="#games">Juegos Mortales</a></li>
         </ul>
         <div class="nav-auth" id="authActions">
-            <button class="btn-ghost small" onclick="toggleModal('login')">Ingresar</button>
-            <button class="btn-blood small" onclick="toggleModal('register')">Unirse</button>
+            <button id="loginBtn" class="btn-ghost small" onclick="toggleModal('login')">Ingresar</button>
+            <button id="registerBtn" class="btn-blood small" onclick="toggleModal('register')">Unirse</button>
         </div>
 
-        <!-- USER LOGGED IN AREA -->
-        <div class="nav-user hidden" id="authUser">
 
-            <!-- SOUL BALANCE -->
-            <div class="soul-balance-container" title="Tu saldo de Almas">
-                <span class="soul-icon">👻</span>
-                <span id="userSoulBalance" class="soul-amount">0</span>
-            </div>
-
-            <span class="user-greeting">Hola, <span id="usernameSpan" class="blood-text">Mortal</span></span>
-
-            <!-- NEW PROFILE BUTTON -->
-            <a href="pages/user_page.html" class="btn-ghost small"
-                style="text-decoration: none; margin-right: 15px; border-color: var(--blood-red); color: var(--blood-red);">
-                👤 Mi Santuario
-            </a>
-
-            <button class="btn-icon" onclick="toggleCart()">
-                🛒 <span id="cartCount" class="badge">0</span>
-            </button>
-            <button class="btn-ghost small logout-btn" onclick="logout()">Salir</button>
-        </div>
 
         <div class="hamburger" onclick="toggleMobileNav()">
             <span></span>

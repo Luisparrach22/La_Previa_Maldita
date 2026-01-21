@@ -1,4 +1,4 @@
-import { checkAuthSession, handleAuthSubmit, toggleModal, logout, handleGoogleSignIn, setupSessionSync } from './modules/auth.js';
+import { checkAuthSession, handleAuthSubmit, toggleModal, logout, handleGoogleSignIn, setupSessionSync, setupAuthListeners } from './modules/auth.js';
 import { fetchTickets, fetchProducts, filterStore } from './modules/store.js';
 import { addToCart, toggleCart, removeFromCart, checkout } from './modules/cart.js';
 import { 
@@ -44,12 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroVideo = document.querySelector('.hero-video');
     if (heroVideo) heroVideo.muted = true;
 
-    checkAuthSession();
+    checkAuthSession(false, false);
     fetchProducts();
     fetchTickets();
     initCountdown();
     setupScrollEffects();
     
     setupKeyboardListeners(handleAuthSubmit, sendMessage);
+    setupAuthListeners();
     setupSessionSync();
 });

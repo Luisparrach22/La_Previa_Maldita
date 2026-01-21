@@ -15,7 +15,7 @@ async function checkSession() {
 
     if (!token) {
         // Redirigir silenciosamente si no hay sesión
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
         return;
     }
 
@@ -36,7 +36,7 @@ async function checkSession() {
         console.error("Error de sesión:", e);
         alert("Tu sesión ha expirado o no hay conexión con el servidor.");
         localStorage.removeItem('token');
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
     }
 }
 
