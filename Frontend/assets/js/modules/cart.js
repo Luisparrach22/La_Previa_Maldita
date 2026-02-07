@@ -39,20 +39,22 @@ export function renderCart() {
     let total = 0;
 
     if (cart.length === 0) {
-        list.innerHTML = '<li style="text-align: center; padding: 20px;">Tu alma está vacía...</li>';
+        list.innerHTML = '<li class="cart-empty-msg">Tu alma está vacía...</li>';
     } else {
         cart.forEach((item, index) => {
             total += item.price;
             const li = document.createElement('li');
-            li.style.borderBottom = "1px solid #333";
-            li.style.padding = "10px 0";
-            li.style.display = "flex";
-            li.style.justifyContent = "space-between";
-            li.style.color = "#ccc";
+            li.className = 'cart-item';
+
+            const itemIcon = item.type === 'ticket' ? '🎟️' : '💀';
 
             li.innerHTML = `
-                <span>${item.name}</span>
-                <span>👻 ${item.price} <button class="remove-btn" data-index="${index}" style="background:none; border:none; color:red; cursor:pointer; margin-left: 5px;">✕</button></span>
+                <div class="cart-item-img">${itemIcon}</div>
+                <div class="cart-item-info">
+                    <h4>${item.name}</h4>
+                    <p>👻 ${item.price}</p>
+                </div>
+                <button class="remove-btn btn-remove" data-index="${index}">✕</button>
             `;
             list.appendChild(li);
         });

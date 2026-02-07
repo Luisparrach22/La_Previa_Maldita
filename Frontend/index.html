@@ -45,7 +45,7 @@
     <nav class="main-nav" id="mainNav">
         <div class="nav-logo">
             <a href="#hero">
-                <img src="assets/images/image logo.png" alt="La Previa Maldita">
+                <img src="assets/images/image_logo-removebg-preview.png" alt="La Previa Maldita">
             </a>
         </div>
         <ul class="nav-links">
@@ -56,8 +56,23 @@
             <li><a href="#games">Juegos Mortales</a></li>
         </ul>
         <div class="nav-auth" id="authActions">
-            <button id="loginBtn" class="btn-ghost small" onclick="toggleModal('login')">Ingresar</button>
-            <button id="registerBtn" class="btn-blood small" onclick="toggleModal('register')">Unirse</button>
+            <button id="loginBtn" class="btn-ghost small">Ingresar</button>
+            <button id="registerBtn" class="btn-blood small">Unirse</button>
+        </div>
+
+        <!-- User Section for Desktop (hidden by default) -->
+        <div class="nav-user hidden" id="authUser">
+            <div class="soul-balance-container">
+                <span class="soul-icon">👻</span>
+                <span class="soul-amount" id="userSoulBalance">0</span>
+            </div>
+            <a href="pages/user_page.html" class="username-link">
+                <span id="usernameSpan">Víctima</span> 👤
+            </a>
+            <button class="btn-icon" onclick="toggleCart()">
+                🛒 <span class="badge" id="cartCount">0</span>
+            </button>
+            <button class="btn-ghost small" onclick="logout()">Salir</button>
         </div>
 
 
@@ -263,14 +278,16 @@
     <!-- Floating Chat Bot -->
     <div class="chat-widget closed" id="chatWidget">
         <div class="chat-header" onclick="toggleChat()">
-            <span>💬 Oráculo</span>
+            <div class="chat-icon"><img src="assets/images/fantasma.png" alt="Oráculo"></div>
+            <div class="chat-title">Oráculo Maldito</div>
+            <div class="toggle-icon">▲</div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-messages" id="chatMessages">
-                <div class="msg bot">Estoy aquí... ¿qué deseas saber?</div>
+                <div class="msg bot">Los muertos susurran... ¿qué deseas preguntar?</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="Pregunta a los espíritus...">
+                <input type="text" id="chatInput" placeholder="Escribe tu destino...">
                 <button onclick="sendMessage()">🔮</button>
             </div>
         </div>
@@ -278,23 +295,22 @@
 
     <!-- Cart Overlay -->
     <div class="cart-overlay" id="cartOverlay">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="font-family: 'Nosifer', cursive; color: var(--blood-red);">Tu Cesta</h3>
+        <div class="cart-header">
+            <h3>Tu Cesta</h3>
             <button class="btn-ghost small" onclick="toggleCart()">X</button>
         </div>
 
-        <ul id="cartList" style="list-style: none;">
-            <!-- Cart Items -->
-            <li style="text-align: center; color: #666; padding: 20px;">Tu alma está vacía...</li>
+        <ul id="cartList" class="cart-list">
+            <!-- Items injected by JS -->
+            <li class="cart-empty-msg">Tu alma está vacía...</li>
         </ul>
 
-        <div style="border-top: 1px solid #333; padding-top: 20px; margin-top: auto;">
-            <div
-                style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;">
+        <div class="cart-footer">
+            <div class="cart-total-row">
                 <span>Total:</span>
-                <span>$<span id="cartTotal">0.00</span></span>
+                <span>👻 <span id="cartTotal">0</span></span>
             </div>
-            <button class="btn-blood" style="width: 100%;" onclick="checkout()">Pagar con tu Alma</button>
+            <button id="checkoutBtn" class="btn-blood" onclick="checkout()">Pagar con tu Alma</button>
         </div>
     </div>
 
