@@ -95,42 +95,7 @@ export function closeVideoModal() {
     }
 }
 
-export function toggleChat() {
-    const chat = document.getElementById('chatWidget');
-    if (chat) chat.classList.toggle('closed');
-}
-
-export function sendMessage() {
-    const input = document.getElementById('chatInput');
-    if (!input) return;
-    
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    addMessage(msg, 'user');
-    input.value = '';
-
-    setTimeout(() => {
-        let reply = "Los espíritus guardan silencio...";
-        if (msg.toLowerCase().includes('precio') || msg.toLowerCase().includes('ticket')) {
-            reply = "El precio es tu alma... o $6.66 por un ticket mortal.";
-        } else if (msg.toLowerCase().includes('hola')) {
-            reply = "Te estábamos esperando...";
-        }
-        addMessage(reply, 'bot');
-    }, 1000);
-}
-
-function addMessage(text, sender) {
-    const container = document.getElementById('chatMessages');
-    if (!container) return;
-    
-    const div = document.createElement('div');
-    div.className = `msg ${sender}`;
-    div.textContent = text;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-}
+// Chatbot logic moved to chatbot.js
 
 export function toggleMobileNav() {
     const menu = document.getElementById('mobileMenu');

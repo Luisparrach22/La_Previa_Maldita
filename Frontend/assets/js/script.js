@@ -9,8 +9,9 @@ import {
 } from './modules/games.js';
 import { 
     setupScrollEffects, initCountdown, setupKeyboardListeners, 
-    openVideoModal, closeVideoModal, toggleChat, sendMessage, toggleMobileNav 
+    openVideoModal, closeVideoModal, toggleMobileNav 
 } from './modules/ui.js';
+import { toggleChat, sendMessage } from './modules/chatbot.js';
 
 // Expose functions to window for HTML onclick compatibility
 window.toggleModal = toggleModal;
