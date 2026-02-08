@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
+from datetime import datetime
 from typing import Optional, List
 from . import models, schemas, auth
 from fastapi import HTTPException, status
@@ -207,11 +208,72 @@ def get_user_best_score(db: Session, user_id: int) -> Optional[models.Score]:
     ).order_by(desc(models.Score.points)).first()
 
 def create_score(db: Session, score: schemas.ScoreCreate, user_id: int) -> models.Score:
-    """Crear nueva puntuación"""
-    db_score = models.Score(points=score.points, user_id=user_id)
-    db.add(db_score)
+    """
+    Registrar puntuación:
+    - Si ya existe puntuación para ese juego y usuario, actualiza solo si es mayor (High Score).
+    - Si no existe, crea una nueva.
+    - Actualiza el rango del usuario basado en sus puntos totales.
+    """
+    # 1. Buscar si ya existe puntuación para este juego
+    existing_score = db.query(models.Score).filter(
+        models.Score.user_id == user_id,
+        models.Score.game_type == score.game_type
+    ).first()
+    
+    db_score = None
+    
+    if existing_score:
+        # Si existe, verificamos si la nueva es mayor
+        if score.points > existing_score.points:
+            existing_score.points = score.points
+            existing_score.level_reached = score.level_reached
+            existing_score.time_played_seconds = score.time_played_seconds
+            existing_score.played_at = datetime.utcnow()
+            db_score = existing_score
+        else:
+            # Si no es mayor, no hacemos nada (mantenemos el high score)
+            return existing_score
+    else:
+        # Si no existe, creamos una nueva
+        db_score = models.Score(
+            points=score.points, 
+            user_id=user_id,
+            game_type=score.game_type,
+            level_reached=score.level_reached,
+            time_played_seconds=score.time_played_seconds,
+            device_type=score.device_type
+        )
+        db.add(db_score)
+    
     db.commit()
     db.refresh(db_score)
+    
+    # 2. Recalcular Rango del Usuario
+    # Obtener suma total de puntos de todos los juegos del usuario
+    total_points = db.query(func.sum(models.Score.points)).filter(
+        models.Score.user_id == user_id
+    ).scalar() or 0
+    
+    # Definir rangos
+    new_rank = "Mortal"
+    if total_points >= 5000:
+        new_rank = "Señor de las Tinieblas"
+    elif total_points >= 2000:
+        new_rank = "Demonio Mayor"
+    elif total_points >= 1000:
+        new_rank = "Demonio"
+    elif total_points >= 500:
+        new_rank = "Espectro"
+    elif total_points >= 100:
+        new_rank = "Alma en Pena"
+        
+    # Actualizar usuario
+    user = get_user(db, user_id)
+    if user and user.rank != new_rank:
+        user.rank = new_rank
+        db.commit()
+        db.refresh(user)
+        
     return db_score
 
 def update_score(db: Session, score_id: int, score_update: schemas.ScoreUpdate) -> Optional[models.Score]:

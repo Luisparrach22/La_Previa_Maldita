@@ -27,10 +27,7 @@ class Settings:
         if not url:
             url = self.MYSQL_URL
         if not url:
-            # Fallback for local sqlite if nothing else (Optional, but nice for dev)
-            return "sqlite:///./sql_app.db"
-            # Alternatively raise error
-            # raise ValueError("DATABASE_URL or MYSQL_URL is not set")
+            raise ValueError("❌ DATABASE_URL or MYSQL_URL is not set in .env file. MySQL is required.")
         
         # Railway Fix
         if url.startswith("mysql://"):

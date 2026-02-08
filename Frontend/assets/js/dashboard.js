@@ -50,8 +50,16 @@ function setupUserUI(user) {
     // Mostrar balance de almas
     const soulBalance = user.soul_balance || 0;
     document.getElementById('soulBalanceAmount').textContent = soulBalance;
+
+    // Mostrar Rango
+    const rank = user.rank || "Mortal";
+    const rankSidebar = document.getElementById('userRankSidebar');
+    if (rankSidebar) rankSidebar.textContent = rank;
     
-    console.log('👻 Balance de almas:', soulBalance);
+    const rankTitleEl = document.getElementById('userRankTitle');
+    if (rankTitleEl) rankTitleEl.textContent = rank;
+    
+    console.log('👻 Balance de almas:', soulBalance, 'Rango:', rank);
 }
 
 function logoutUser() {
@@ -356,8 +364,22 @@ async function loadDashboardData(token) {
         renderTicketsFromOrders([]);
     }
 
-    // Cargar mejor puntuación local
-    document.getElementById('bestScore').textContent = localStorage.getItem('localHighScore') || "0";
+    // Cargar mejor puntuación DESDE EL BACKEND
+    try {
+        const resBest = await fetch(`${API_URL}/games/my-best?t=${new Date().getTime()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resBest.ok) {
+            const best = await resBest.json();
+            document.getElementById('bestScore').textContent = best.points || "0";
+        } else {
+            console.warn("No best score found or error:", resBest.status);
+            document.getElementById('bestScore').textContent = "0";
+        }
+    } catch (e) {
+        console.error("Error loading best score", e);
+        document.getElementById('bestScore').textContent = "0";
+    }
     
     // Cargar Shop
     loadShopData(token);

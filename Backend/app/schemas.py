@@ -146,6 +146,7 @@ class UserResponse(BaseModel):
     is_active: bool = True
     is_verified: bool = False
     soul_balance: int = 0
+    rank: str = "Mortal"
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -102,6 +102,7 @@ class User(Base):
     
     # Economía (Gamificación)
     soul_balance = Column(Integer, default=0)
+    rank = Column(String(50), default="Mortal")
     
     # Preferencias
     receive_notifications = Column(Boolean, default=True)
