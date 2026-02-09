@@ -26,11 +26,15 @@ export function sendMessage() {
     addMessage(msg, 'user');
     input.value = '';
 
+    // Mostrar indicador de "escribiendo"
+    showTypingIndicator();
+
     // Simular "escribiendo" o retraso fantasmal
     setTimeout(() => {
+        removeTypingIndicator();
         const response = getBotResponse(msg);
         addMessage(response, 'bot');
-    }, 1000);
+    }, 1500);
 }
 
 function getBotResponse(userMsg) {
@@ -55,3 +59,33 @@ function addMessage(text, sender) {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
 }
+
+function showTypingIndicator() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'msg typing';
+    typingDiv.id = 'typingIndicator';
+    
+    const dotsContainer = document.createElement('div');
+    dotsContainer.className = 'typing-dots';
+    
+    // Crear los tres puntos animados
+    for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('span');
+        dotsContainer.appendChild(dot);
+    }
+    
+    typingDiv.appendChild(dotsContainer);
+    container.appendChild(typingDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
