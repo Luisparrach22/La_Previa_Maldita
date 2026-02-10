@@ -9,7 +9,7 @@ import {
 } from './modules/games.js';
 import { 
     setupScrollEffects, initCountdown, setupKeyboardListeners, 
-    openVideoModal, closeVideoModal, toggleMobileNav 
+    closeVideoModal, toggleMobileNav 
 } from './modules/ui.js';
 import { toggleChat, sendMessage } from './modules/chatbot.js';
 
@@ -33,7 +33,7 @@ window.hitTarget = hitTarget;
 window.initTriviaGame = initTriviaGame;
 window.initMemoryGame = initMemoryGame;
 
-window.openVideoModal = openVideoModal;
+
 window.closeVideoModal = closeVideoModal;
 window.toggleChat = toggleChat;
 window.sendMessage = sendMessage;

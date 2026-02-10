@@ -658,50 +658,6 @@ body {
   margin: 100px 0;
 }
 
-.game-banner {
-  background: linear-gradient(to right, #000 40%, #111 100%);
-  border: 1px solid #333;
-  border-radius: 30px;
-  overflow: hidden;
-  display: flex;
-  min-height: 500px;
-}
-
-.game-content {
-  flex: 1;
-  padding: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.game-content p {
-  font-size: 1.2rem;
-  color: #aaa;
-  margin: 20px 0 40px;
-  max-width: 400px;
-}
-
-.game-visual {
-  flex: 1;
-  background: url("https://images.unsplash.com/photo-1542259681-d2629b398666?q=80&w=1000&auto=format&fit=crop")
-    center/cover;
-  position: relative;
-  border-left: 2px solid var(--blood-red);
-}
-
-.score-board {
-  margin-bottom: 30px;
-  display: flex;
-  gap: 20px;
-  font-size: 1.1rem;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #333;
-}
-
 .btn-start-game {
   background: var(--spectral-green);
   color: #000;
@@ -714,6 +670,9 @@ body {
   box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
   transition: 0.3s;
   transform: skew(-10deg);
+  border-radius: 5px;
+  font-family: "Outfit", sans-serif;
+  text-transform: uppercase;
 }
 
 .btn-start-game:hover {
@@ -920,22 +879,6 @@ body {
   /* Fix Event Info Overlap on Tablet */
   .event-info {
     margin-top: -40px;
-  }
-
-  /* Fix Game Banner Stacking */
-  .game-banner {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .game-content {
-    padding: 30px;
-  }
-
-  .game-visual {
-    min-height: 250px;
-    border-left: none;
-    border-top: 2px solid var(--blood-red);
   }
 }
 
