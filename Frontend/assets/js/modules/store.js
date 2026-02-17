@@ -38,16 +38,26 @@ function renderTickets(tickets) {
 
     tickets.forEach(ticket => {
         const isFeatured = ticket.is_featured;
-        const cardClass = isFeatured ? 'ticket-card premium glass-panel' : 'ticket-card glass-panel';
+        // Forzamos que todos los tickets tengan la clase premium para uniformidad de tamaño
+        const cardClass = 'ticket-card premium glass-panel';
         
-        let imageHtml = '';
-        if (ticket.image_url) {
-            imageHtml = `
-                <div class="ticket-image" style="height: 160px; overflow: hidden;">
-                    <img src="${ticket.image_url}" alt="${ticket.name}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-            `;
-        }
+        // Placeholder HTML reusable
+        const placeholderHtml = `
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.2);">
+                 <img src="assets/images/image_logo-removebg-preview.png" alt="Placeholder" style="height: 60%; opacity: 0.3; filter: grayscale(100%);">
+            </div>`;
+
+        // Validación para mantener el mismo formato si tiene imagen o no, y manejar errores de carga
+        const imageContent = ticket.image_url 
+            ? `<img src="${ticket.image_url}" alt="${ticket.name}" style="width: 100%; height: 100%; object-fit: cover;" 
+               onerror="this.parentElement.innerHTML = '${placeholderHtml.replace(/"/g, "&quot;").replace(/\n/g, "")}'">`
+            : placeholderHtml;
+
+        const imageHtml = `
+            <div class="ticket-image" style="height: 160px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                ${imageContent}
+            </div>
+        `;
 
         let descHtml = '';
         if (ticket.description) {
