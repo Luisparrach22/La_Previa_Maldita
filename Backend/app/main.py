@@ -1,7 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from sqlalchemy.exc import SQLAlchemyError
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from .database import engine, Base, SessionLocal
 from .routers import user, products, games, orders, upload
 import os
@@ -74,7 +80,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-
+# ============================================================================
+# RATE LIMITING
+# ============================================================================
+# Limita las peticiones globales a 100 por minuto por IP para evitar ataques
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 # ============================================================================
 # CORS MIDDLEWARE
 # ============================================================================
@@ -94,8 +107,6 @@ app.add_middleware(
 )
 
 # Exception handler para asegurar que los errores también tengan headers CORS
-from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 
 @app.exception_handler(HTTPException)
@@ -111,6 +122,22 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail},
+        headers=headers
+    )
+
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    """Oculta mensajes de error de la BD al frontend en producción"""
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin and origin in origins:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        
+    print(f"Database error: {exc}") # Registro interno del error
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Error interno en la base de datos."},
         headers=headers
     )
 

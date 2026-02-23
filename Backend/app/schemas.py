@@ -115,11 +115,8 @@ class UserUpdate(BaseModel):
     # Solo admin puede cambiar
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
-    # Solo admin puede cambiar
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
-    soul_balance: Optional[int] = None
+    soul_balance: Optional[int] = Field(None, ge=0)
 
 class UserCreateAdmin(UserCreate):
     """Schema para creación de usuario por administrador"""
@@ -229,12 +226,12 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     slug: Optional[str] = None
     short_description: Optional[str] = None
-    original_price: Optional[float] = None
-    stock: int = 100
+    original_price: Optional[float] = Field(None, gt=0)
+    stock: int = Field(100, ge=0)
     image_url: Optional[str] = None
     event_id: Optional[int] = None
     ticket_type: Optional[TicketType] = None
-    max_per_order: int = 10
+    max_per_order: int = Field(10, gt=0)
     is_active: bool = True
     is_featured: bool = False
     is_visible: bool = True
@@ -242,10 +239,10 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[float] = None
+    price: Optional[float] = Field(None, gt=0)
     type: Optional[ProductType] = None
     category: Optional[str] = None
-    stock: Optional[int] = None
+    stock: Optional[int] = Field(None, ge=0)
     image_url: Optional[str] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
