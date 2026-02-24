@@ -126,6 +126,9 @@ function logoutAdmin() {
 // ============================================================================
 
 function switchSection(sectionId) {
+    // Detener el escáner QR si estaba activo (libera la cámara)
+    if (typeof stopQRScanner === 'function' && qrScanActive) stopQRScanner();
+
     // Update nav
     document.querySelectorAll('.sidebar-nav li').forEach(li => li.classList.remove('active'));
     event.currentTarget.classList.add('active');
@@ -133,6 +136,7 @@ function switchSection(sectionId) {
     // Update sections
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.getElementById(`section-${sectionId}`).classList.add('active');
+
 
     // Update header
     const titles = {
@@ -1334,5 +1338,152 @@ function previewEntradaImage() {
 window.onclick = function (event) {
     if (event.target.classList.contains('modal')) {
         event.target.classList.add('hidden');
+    }
+}
+
+// ============================================================================
+// QR SCANNER — BarcodeDetector API
+// ============================================================================
+
+let qrScanStream = null;       // MediaStream activo de la cámara
+let qrScanActive = false;      // Flag para controlar el loop de escaneo
+let qrScanAnimFrame = null;    // ID del requestAnimationFrame para poder cancelarlo
+
+/**
+ * Inicia el escáner QR activando la cámara trasera del dispositivo.
+ * Usa la BarcodeDetector API nativa del navegador (Chrome/Edge).
+ * Si no está soportada, muestra un aviso y redirige al input manual.
+ */
+async function startQRScanner() {
+    // Verificar soporte de BarcodeDetector
+    if (!('BarcodeDetector' in window)) {
+        document.getElementById('qrNotSupported').classList.remove('hidden');
+        document.getElementById('btnStartScan').style.display = 'none';
+        return;
+    }
+
+    try {
+        // Solicitar acceso a la cámara (preferir cámara trasera en móviles)
+        qrScanStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
+        });
+
+        const video = document.getElementById('qrVideo');
+        video.srcObject = qrScanStream;
+        await video.play();
+
+        // Mostrar el visor y ocultar el botón de inicio
+        document.getElementById('qrCameraContainer').classList.remove('hidden');
+        document.getElementById('btnStartScan').style.display = 'none';
+
+        // Iniciar el loop de detección
+        qrScanActive = true;
+        const detector = new BarcodeDetector({ formats: ['qr_code'] });
+        scanQRFrame(video, detector);
+
+    } catch (err) {
+        console.error('Error al acceder a la cámara:', err);
+        if (err.name === 'NotAllowedError') {
+            showNotification('❌ Permiso de cámara denegado. Actívalo en la configuración del navegador.', 'error');
+        } else {
+            showNotification('❌ No se pudo acceder a la cámara: ' + err.message, 'error');
+        }
+    }
+}
+
+/**
+ * Loop de detección: captura cada fotograma del video y busca códigos QR.
+ * Cuando encuentra uno, llama a onQRDetected(code) y detiene el escáner.
+ */
+async function scanQRFrame(video, detector) {
+    if (!qrScanActive) return;
+
+    // Esperar a que el video tenga datos reales antes de analizar
+    if (video.readyState < video.HAVE_ENOUGH_DATA) {
+        qrScanAnimFrame = requestAnimationFrame(() => scanQRFrame(video, detector));
+        return;
+    }
+
+    try {
+        const barcodes = await detector.detect(video);
+        if (barcodes.length > 0) {
+            // ¡Código QR detectado!
+            const code = barcodes[0].rawValue;
+            onQRDetected(code);
+            return; // Detener el loop — ya tenemos el código
+        }
+    } catch (e) {
+        // Silenciar errores de frame no procesable (normales al inicio)
+    }
+
+    // Continuar escaneando si no se detectó nada
+    if (qrScanActive) {
+        qrScanAnimFrame = requestAnimationFrame(() => scanQRFrame(video, detector));
+    }
+}
+
+/**
+ * Se llama cuando se detecta un código QR.
+ * Rellena el input manual, para la cámara y lanza la validación automáticamente.
+ */
+function onQRDetected(code) {
+    // Feedback visual en el status
+    const statusEl = document.getElementById('qrScanStatus');
+    if (statusEl) {
+        statusEl.textContent = '✅ ¡Código detectado! Validando...';
+        statusEl.style.color = '#22c55e';
+    }
+
+    // Pequeña pausa para que el usuario vea el feedback antes de cerrar
+    setTimeout(() => {
+        stopQRScanner();
+
+        // Rellenar el campo manual con el código escaneado
+        const input = document.getElementById('ticketCodeInput');
+        if (input) {
+            input.value = code;
+            // Scroll suave hacia el resultado
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Lanzar la validación automáticamente
+        validateTicket();
+    }, 600);
+}
+
+/**
+ * Detiene el escáner y libera la cámara.
+ * También restaura la UI al estado inicial.
+ */
+function stopQRScanner() {
+    qrScanActive = false;
+
+    // Cancelar el loop de animación
+    if (qrScanAnimFrame) {
+        cancelAnimationFrame(qrScanAnimFrame);
+        qrScanAnimFrame = null;
+    }
+
+    // Detener todos los tracks del stream de la cámara
+    if (qrScanStream) {
+        qrScanStream.getTracks().forEach(track => track.stop());
+        qrScanStream = null;
+    }
+
+    // Limpiar el video
+    const video = document.getElementById('qrVideo');
+    if (video) {
+        video.srcObject = null;
+    }
+
+    // Restaurar UI del escáner
+    document.getElementById('qrCameraContainer').classList.add('hidden');
+    document.getElementById('btnStartScan').style.display = '';
+
+    // Restaurar texto de status para la próxima vez
+    const statusEl = document.getElementById('qrScanStatus');
+    if (statusEl) {
+        statusEl.textContent = '📡 Apunta la cámara al código QR del ticket...';
+        statusEl.style.color = '';
     }
 }

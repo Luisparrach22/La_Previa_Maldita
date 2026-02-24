@@ -278,8 +278,41 @@
         <section id="section-tickets" class="admin-section">
             <div class="ticket-validator">
                 <h2>Validar Ticket</h2>
-                <p>Escanea el código QR o ingresa el código del ticket manualmente</p>
+                <p>Escanea el código QR con la cámara o ingresa el código manualmente</p>
 
+                <!-- QR SCANNER AREA -->
+                <div class="qr-scanner-area" id="qrScannerArea">
+                    <!-- Botón para iniciar escáner -->
+                    <button class="btn-qr-scan" id="btnStartScan" onclick="startQRScanner()">
+                        📷 Escanear QR con Cámara
+                    </button>
+
+                    <!-- Vista de cámara (oculta hasta activar) -->
+                    <div class="qr-camera-container hidden" id="qrCameraContainer">
+                        <video id="qrVideo" class="qr-video" autoplay muted playsinline></video>
+                        <canvas id="qrCanvas" class="hidden"></canvas>
+                        <div class="qr-overlay-frame">
+                            <div class="qr-corner top-left"></div>
+                            <div class="qr-corner top-right"></div>
+                            <div class="qr-corner bottom-left"></div>
+                            <div class="qr-corner bottom-right"></div>
+                        </div>
+                        <p class="qr-scan-status" id="qrScanStatus">📡 Apunta la cámara al código QR del ticket...</p>
+                        <button class="btn-qr-cancel" onclick="stopQRScanner()">✖ Cancelar Escáner</button>
+                    </div>
+
+                    <!-- Mensaje de compatibilidad -->
+                    <div class="qr-not-supported hidden" id="qrNotSupported">
+                        ⚠️ Tu navegador no soporta el escáner QR. Usa el campo manual de abajo.
+                    </div>
+                </div>
+
+                <!-- SEPARADOR -->
+                <div class="validator-divider">
+                    <span>— o ingresa el código manualmente —</span>
+                </div>
+
+                <!-- INPUT MANUAL (sin cambios) -->
                 <div class="validator-input">
                     <input type="text" id="ticketCodeInput" placeholder="Ingresa el código del ticket (ej: TKT-1-123)">
                     <button class="btn-primary" onclick="validateTicket()">Validar</button>
@@ -290,6 +323,7 @@
                 </div>
             </div>
         </section>
+
     </main>
 
     <!-- User Modal -->
