@@ -898,10 +898,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .admin-sidebar {
-    display: none;
-  }
-
   .admin-main {
     margin-left: 0;
     padding: 16px;
@@ -1008,6 +1004,14 @@ body {
         white-space: nowrap;
         border-left: none;
         border-bottom: 3px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-nav li span:not(.nav-icon) {
+        display: inline-block; /* Re-show text hidden by 1024px */
+        font-size: 14px;
     }
 
     .sidebar-nav li.active {
@@ -1020,6 +1024,16 @@ body {
         justify-content: space-between;
         align-items: center;
         padding: 10px 20px;
+    }
+
+    .logo-text {
+        display: block; /* Re-show logo text */
+    }
+
+    .btn-logout {
+        display: inline-block; /* Re-show logout button */
+        width: auto;
+        padding: 8px 16px;
     }
 }
 
