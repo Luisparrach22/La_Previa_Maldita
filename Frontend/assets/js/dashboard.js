@@ -445,7 +445,7 @@ function renderTicketsFromOrders(orders) {
                         <div class="ticket-type">PASE DE ACCESO</div>
                         <div class="ticket-event">${ticketName}</div>
                         <div class="qr-placeholder" style="text-align:center;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${ticketId}&color=000000" alt="QR" style="width:80px; height:80px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketId)}" alt="QR" style="width:80px; height:80px;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=font-size:3rem>🎟️</div>';">
                         </div>
                         <div class="ticket-id">${ticketId}</div>
                         <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#666;">
@@ -497,8 +497,13 @@ function openTicketModal(title, id, status) {
     document.getElementById('modalTicketTitle').textContent = title.toUpperCase();
     document.getElementById('modalTicketID').textContent = id;
 
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${id}`;
-    document.getElementById('modalTicketQR').src = qrUrl;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(id)}`;
+    const qrImg = document.getElementById('modalTicketQR');
+    qrImg.src = qrUrl;
+    qrImg.onerror = function() {
+        this.style.display = 'none';
+        this.parentElement.innerHTML = '<div style="font-size:5rem; padding:20px;">🎟️</div><p style="color:#888;">QR no disponible</p>';
+    };
 
     document.getElementById('ticketModal').classList.remove('hidden');
 }

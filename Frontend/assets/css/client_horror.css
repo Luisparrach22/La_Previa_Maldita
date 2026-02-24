@@ -582,6 +582,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 15px;
 }
 
 .dashboard-modal.hidden {
@@ -656,6 +657,8 @@ body {
   width: 250px;
   height: 250px;
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .ticket-info-row {
@@ -742,6 +745,66 @@ body {
   .dashboard-menu li.active {
     border-left: none;
     border-top-color: var(--bright-blood);
+  }
+
+  .side-text {
+    display: none;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  /* Modal responsive para móviles */
+  .modal-content {
+    padding: 25px 20px;
+    max-width: 95%;
+    width: 95%;
+    border-radius: 15px;
+  }
+
+  .glitch-text-sm {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+
+  .qr-big {
+    padding: 10px;
+    margin: 15px auto 20px;
+    border-width: 3px;
+  }
+
+  .qr-big img {
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .close-modal {
+    top: 10px;
+    right: 15px;
+    font-size: 2rem;
+  }
+
+  .ticket-info-row {
+    font-size: 0.9rem;
+    padding: 10px 0;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .ticket-instruction {
+    margin-top: 15px;
+    font-size: 0.8rem;
+  }
+
+  .tab-title {
+    font-size: 2rem;
+  }
+
+  .tab-subtitle {
+    margin-bottom: 25px;
   }
 }
 
