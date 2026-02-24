@@ -112,8 +112,12 @@ function redirectToLogin(message = null) {
 
 function setupAdminUI() {
     const displayName = currentAdmin.first_name || currentAdmin.username;
+    const initial = displayName.charAt(0).toUpperCase();
     document.getElementById('adminName').textContent = displayName;
-    document.getElementById('adminAvatar').textContent = displayName.charAt(0).toUpperCase();
+    document.getElementById('adminAvatar').textContent = initial;
+    // Sincronizar avatar en mobile topbar
+    const mobAvatar = document.getElementById('mobAdminAvatar');
+    if (mobAvatar) mobAvatar.textContent = initial;
 }
 
 function logoutAdmin() {
@@ -129,37 +133,51 @@ function switchSection(sectionId) {
     // Detener el escáner QR si estaba activo (libera la cámara)
     if (typeof stopQRScanner === 'function' && qrScanActive) stopQRScanner();
 
-    // Update nav
+    // Update sidebar nav (desktop)
     document.querySelectorAll('.sidebar-nav li').forEach(li => li.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (event && event.currentTarget && event.currentTarget.classList.contains('sidebar-nav')) {
+        event.currentTarget.classList.add('active');
+    } else {
+        // Buscar el li del sidebar que corresponde a esta sección
+        const sideLi = document.querySelector(`.sidebar-nav li[onclick*="'${sectionId}'"]`);
+        if (sideLi) sideLi.classList.add('active');
+    }
+
+    // Update bottom nav (móvil)
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+    const bnavBtn = document.querySelector(`.bottom-nav-item[data-section="${sectionId}"]`);
+    if (bnavBtn) bnavBtn.classList.add('active');
 
     // Update sections
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.getElementById(`section-${sectionId}`).classList.add('active');
 
-
     // Update header
     const titles = {
-        'dashboard': { title: 'Dashboard', subtitle: 'Vista general del sistema' },
-        'users': { title: 'Usuarios', subtitle: 'Gestión de usuarios registrados' },
-        'entradas': { title: 'Entradas', subtitle: 'Gestión de tickets y pases de acceso' },
-        'products': { title: 'Productos', subtitle: 'Gestión de merchandise, bebidas y comida' },
-        'orders': { title: 'Pedidos', subtitle: 'Gestión de pedidos y ventas' },
-
-        'tickets': { title: 'Validar Tickets', subtitle: 'Verificar y marcar tickets como usados' }
+        'dashboard': { title: 'Dashboard',       subtitle: 'Vista general del sistema' },
+        'users':     { title: 'Usuarios',         subtitle: 'Gestión de usuarios registrados' },
+        'entradas':  { title: 'Entradas',         subtitle: 'Gestión de tickets y pases de acceso' },
+        'products':  { title: 'Productos',        subtitle: 'Gestión de merchandise, bebidas y comida' },
+        'orders':    { title: 'Pedidos',          subtitle: 'Gestión de pedidos y ventas' },
+        'tickets':   { title: 'Validar Tickets',  subtitle: 'Verificar y marcar tickets como usados' }
     };
 
-    document.getElementById('sectionTitle').textContent = titles[sectionId].title;
-    document.getElementById('sectionSubtitle').textContent = titles[sectionId].subtitle;
+    const info = titles[sectionId];
+    if (info) {
+        document.getElementById('sectionTitle').textContent = info.title;
+        document.getElementById('sectionSubtitle').textContent = info.subtitle;
+        // Sincronizar título en mobile topbar
+        const mobTitle = document.getElementById('mobSectionTitle');
+        if (mobTitle) mobTitle.textContent = info.title;
+    }
 
     // Load section data
     switch (sectionId) {
         case 'dashboard': loadDashboardData(); break;
-        case 'users': loadUsers(); break;
-        case 'entradas': loadEntradas(); break;
-        case 'products': loadProducts(); break;
-        case 'orders': loadOrders(); break;
-
+        case 'users':     loadUsers();         break;
+        case 'entradas':  loadEntradas();      break;
+        case 'products':  loadProducts();      break;
+        case 'orders':    loadOrders();        break;
     }
 }
 
