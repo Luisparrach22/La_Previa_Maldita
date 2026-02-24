@@ -14,17 +14,23 @@ router = APIRouter(
 # PUBLIC ENDPOINTS
 # ============================================================================
 
-@router.get("/leaderboard", response_model=List[schemas.ScoreResponse])
+@router.get("/leaderboard", response_model=List[schemas.ScoreWithUser])
 def get_leaderboard(
     limit: int = Query(10, ge=1, le=100, description="Número de mejores puntuaciones a mostrar"),
+    game_type: str = Query(None, description="Filtrar por tipo de juego: ghost_hunt, trivia, memory"),
     db: Session = Depends(database.get_db)
 ):
     """
-    Obtener el leaderboard con las mejores puntuaciones.
+    Obtener el leaderboard con las mejores puntuaciones, incluyendo datos del jugador.
     
     - **limit**: Número de posiciones a mostrar (máximo 100)
+    - **game_type**: Filtrar por juego específico (opcional)
     """
-    return crud.get_top_scores(db=db, limit=limit)
+    from sqlalchemy.orm import joinedload
+    query = db.query(models.Score).options(joinedload(models.Score.player))
+    if game_type:
+        query = query.filter(models.Score.game_type == game_type)
+    return query.order_by(models.Score.points.desc()).limit(limit).all()
 
 
 # ============================================================================

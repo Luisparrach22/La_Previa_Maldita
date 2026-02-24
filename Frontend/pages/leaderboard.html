@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de los Condenados | La Previa Maldita</title>
+    <meta name="description" content="Los mortales más valientes de La Previa Maldita. ¿Tienes el valor de superar sus puntuaciones?">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="../assets/images/ico-removebg-preview2.ico" type="image/x-icon">
+    <style>
+        /* ============================================================
+           VARIABLES & RESET
+        ============================================================ */
+        :root {
+            --bg-deep:    #060608;
+            --bg-card:    #0e0e14;
+            --bg-card2:   #13131c;
+            --border:     rgba(255,255,255,0.07);
+            --red:        #c0392b;
+            --red-glow:   rgba(192, 57, 43, 0.35);
+            --gold:       #f5c842;
+            --gold-glow:  rgba(245, 200, 66, 0.3);
+            --silver:     #b0b8c8;
+            --bronze:     #cd7f32;
+            --text:       #e5e5e5;
+            --text-muted: #7a7a92;
+            --primary:    #6c1aff;
+            --primary-glow: rgba(108, 26, 255, 0.3);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+           ANIMATED BACKGROUND
+        ============================================================ */
+        .bg-static {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 10% 20%, rgba(108,26,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 90% 80%, rgba(192,57,43,0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            background: rgba(192, 57, 43, 0.6);
+            pointer-events: none;
+            animation: float-up linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes float-up {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* ============================================================
+           LAYOUT
+        ============================================================ */
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        /* ============================================================
+           BACK BUTTON
+        ============================================================ */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 32px;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: var(--text); }
+
+        /* ============================================================
+           HEADER
+        ============================================================ */
+        .lb-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .lb-header .skull-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 12px;
+            animation: pulse-icon 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px var(--red-glow));
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1) rotate(-3deg); }
+            50%       { transform: scale(1.08) rotate(3deg); }
+        }
+
+        .lb-title {
+            font-family: 'Creepster', cursive;
+            font-size: clamp(32px, 6vw, 52px);
+            letter-spacing: 3px;
+            color: var(--text);
+            text-shadow: 0 0 30px var(--red-glow), 0 0 60px rgba(192,57,43,0.15);
+            line-height: 1.1;
+        }
+
+        .lb-subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .lb-subtitle span {
+            color: var(--red);
+        }
+
+        /* ============================================================
+           FILTER TABS
+        ============================================================ */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 20px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-tab:hover {
+            border-color: rgba(108, 26, 255, 0.4);
+            color: var(--text);
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* ============================================================
+           PODIUM TOP 3
+        ============================================================ */
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 0 10px;
+        }
+
+        .podium-slot {
+            flex: 1;
+            max-width: 220px;
+            text-align: center;
+            position: relative;
+        }
+
+        .podium-slot.first { order: 2; }
+        .podium-slot.second { order: 1; }
+        .podium-slot.third { order: 3; }
+
+        .podium-card {
+            background: var(--bg-card2);
+            border: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+            padding: 20px 12px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .podium-slot.first .podium-card {
+            border-color: rgba(245, 200, 66, 0.35);
+            box-shadow: 0 0 40px rgba(245,200,66,0.12), inset 0 1px 0 rgba(245,200,66,0.2);
+            padding-top: 28px;
+        }
+
+        .podium-slot.second .podium-card {
+            border-color: rgba(176, 184, 200, 0.3);
+        }
+
+        .podium-slot.third .podium-card {
+            border-color: rgba(205, 127, 50, 0.3);
+        }
+
+        .podium-crown {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px var(--gold-glow));
+        }
+
+        .podium-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .podium-slot.first  .podium-avatar { background: linear-gradient(135deg, #f5c842, #e67e22); font-size: 24px; width: 64px; height: 64px; }
+        .podium-slot.second .podium-avatar { background: linear-gradient(135deg, #8e9ab0, #525f7a); }
+        .podium-slot.third  .podium-avatar { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+
+        .podium-position {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .podium-slot.first  .podium-position { color: var(--gold); }
+        .podium-slot.second .podium-position { color: var(--silver); }
+        .podium-slot.third  .podium-position { color: var(--bronze); }
+
+        .podium-name {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .podium-game-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .podium-points {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .podium-slot.first  .podium-points { color: var(--gold); }
+        .podium-slot.second .podium-points { color: var(--silver); }
+        .podium-slot.third  .podium-points { color: var(--bronze); }
+
+        .podium-rank-badge {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .podium-base {
+            height: 0;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .podium-slot.first  .podium-base { height: 60px; background: linear-gradient(180deg, rgba(245,200,66,0.15), rgba(245,200,66,0.04)); border: 1px solid rgba(245,200,66,0.2); border-top: none; }
+        .podium-slot.second .podium-base { height: 40px; background: linear-gradient(180deg, rgba(176,184,200,0.1), transparent); border: 1px solid rgba(176,184,200,0.15); border-top: none; }
+        .podium-slot.third  .podium-base { height: 20px; background: linear-gradient(180deg, rgba(205,127,50,0.1), transparent); border: 1px solid rgba(205,127,50,0.15); border-top: none; }
+
+        .podium-empty {
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 30px 8px;
+        }
+
+        /* ============================================================
+           FULL RANKING LIST
+        ============================================================ */
+        .ranking-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ranking-row {
+            display: grid;
+            grid-template-columns: 48px 1fr auto;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            cursor: default;
+        }
+
+        .ranking-row:hover {
+            background: var(--bg-card2);
+            border-color: rgba(108,26,255,0.2);
+            transform: translateX(4px);
+        }
+
+        .ranking-row.is-me {
+            border-color: rgba(108,26,255,0.4);
+            background: rgba(108,26,255,0.06);
+        }
+
+        .rank-num {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .rank-num.top3 { color: var(--text); }
+
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .rank-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .rank-text {
+            min-width: 0;
+        }
+
+        .rank-username {
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .rank-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .rank-game-tag {
+            background: rgba(108,26,255,0.15);
+            color: #a78bfa;
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .rank-points-col {
+            text-align: right;
+        }
+
+        .rank-points {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--red);
+        }
+
+        .rank-souls {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ============================================================
+           STATES: LOADING / EMPTY / ERROR
+        ============================================================ */
+        .state-container {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .state-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .state-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .state-text {
+            font-size: 14px;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card2) 50%, var(--bg-card) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease-in-out infinite;
+            border-radius: 12px;
+            height: 68px;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position:  200% 0; }
+        }
+
+        /* ============================================================
+           USER HIGHLIGHT CARD (si el usuario está logueado)
+        ============================================================ */
+        .my-rank-card {
+            background: linear-gradient(135deg, rgba(108,26,255,0.12), rgba(192,57,43,0.08));
+            border: 1px solid rgba(108,26,255,0.35);
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .my-rank-card.hidden { display: none; }
+
+        .my-rank-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .my-rank-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .my-rank-info .my-rank-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .my-rank-info .my-rank-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .my-rank-right {
+            text-align: right;
+        }
+
+        .my-rank-pos {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .my-rank-pos-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ============================================================
+           RESPONSIVE
+        ============================================================ */
+        @media (max-width: 600px) {
+            .podium { gap: 6px; }
+            .podium-slot.first .podium-avatar { width: 52px; height: 52px; font-size: 20px; }
+            .podium-avatar { width: 44px; height: 44px; font-size: 18px; }
+            .podium-name { font-size: 12px; }
+            .ranking-row { padding: 12px 14px; gap: 10px; }
+            .rank-avatar { width: 34px; height: 34px; font-size: 14px; }
+            .rank-username { font-size: 14px; }
+            .rank-points { font-size: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-static"></div>
+
+    <div class="page-wrap">
+
+        <!-- Back -->
+        <a href="../index.html" class="back-btn">← Volver al Inframundo</a>
+
+        <!-- Header -->
+        <div class="lb-header">
+            <span class="skull-icon">💀</span>
+            <h1 class="lb-title">Tabla de los Condenados</h1>
+            <p class="lb-subtitle">Los mortales que se atrevieron a jugar — y sobrevivieron.<br>
+                <span id="lastUpdated"></span>
+            </p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter(null, this)">🌑 Todos los juegos</button>
+            <button class="filter-tab" onclick="setFilter('ghost_hunt', this)">👻 Whack-a-Ghost</button>
+            <button class="filter-tab" onclick="setFilter('trivia', this)">🧠 Trivia Maldita</button>
+            <button class="filter-tab" onclick="setFilter('memory', this)">🃏 Memoria Letal</button>
+        </div>
+
+        <!-- Mi posición (si está logueado) -->
+        <div class="my-rank-card hidden" id="myRankCard">
+            <div class="my-rank-left">
+                <div class="my-rank-avatar" id="myRankAvatar">?</div>
+                <div class="my-rank-info">
+                    <div class="my-rank-name" id="myRankName">—</div>
+                    <div class="my-rank-sub" id="myRankSub">Mi mejor puntuación</div>
+                </div>
+            </div>
+            <div class="my-rank-right">
+                <div class="my-rank-pos" id="myRankPos">—</div>
+                <div class="my-rank-pos-label">mi posición</div>
+            </div>
+        </div>
+
+        <!-- Podium top 3 -->
+        <div class="podium" id="podium">
+            <!-- Se renderiza vía JS -->
+        </div>
+
+        <!-- Full list -->
+        <div class="ranking-section-title">Clasificación completa</div>
+        <div class="ranking-list" id="rankingList">
+            <!-- Skeletons while loading -->
+            <div class="skeleton"></div>
+            <div class="skeleton" style="opacity:.7;height:60px"></div>
+            <div class="skeleton" style="opacity:.5;height:60px"></div>
+            <div class="skeleton" style="opacity:.35;height:60px"></div>
+            <div class="skeleton" style="opacity:.2;height:60px"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIG
+        // ============================================================
+        const IS_LOCAL  = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL   = IS_LOCAL ? 'http://localhost:8000' : 'http://72.62.170.24:8000';
+        const LIMIT     = 20;
+
+        const GAME_LABELS = {
+            ghost_hunt: '👻 Whack-a-Ghost',
+            trivia:     '🧠 Trivia Maldita',
+            memory:     '🃏 Memoria Letal',
+        };
+
+        let currentFilter = null;
+        let currentUserId = null;
+        let allEntries    = [];
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            spawnParticles();
+            setLastUpdated();
+            await loadCurrentUser();
+            await loadLeaderboard();
+        });
+
+        function setLastUpdated() {
+            const el = document.getElementById('lastUpdated');
+            if (el) el.textContent = `Actualizado: ${new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}`;
+        }
+
+        async function loadCurrentUser() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    currentUserId = user.id;
+                    showMyRankCard(user);
+                }
+            } catch (_) {}
+        }
+
+        // ============================================================
+        // FILTER
+        // ============================================================
+        function setFilter(gameType, btn) {
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = gameType;
+            loadLeaderboard();
+        }
+
+        // ============================================================
+        // LOAD DATA
+        // ============================================================
+        async function loadLeaderboard() {
+            const listEl   = document.getElementById('rankingList');
+            const podiumEl = document.getElementById('podium');
+
+            // Skeleton
+            listEl.innerHTML = Array(5).fill(0).map((_, i) =>
+                `<div class="skeleton" style="opacity:${1 - i * 0.18}; height:${i === 0 ? 68 : 62}px"></div>`
+            ).join('');
+            podiumEl.innerHTML = '';
+
+            try {
+                let url = `${API_URL}/games/leaderboard?limit=${LIMIT}`;
+                if (currentFilter) url += `&game_type=${currentFilter}`;
+
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Error al cargar');
+
+                allEntries = await res.json();
+
+                renderPodium(allEntries.slice(0, 3));
+                renderList(allEntries);
+                updateMyRankPosition(allEntries);
+
+            } catch (e) {
+                listEl.innerHTML = `
+                    <div class="state-container">
+                        <span class="state-icon">🕸️</span>
+                        <div class="state-title">El inframundo está en silencio...</div>
+                        <div class="state-text">No se pudo cargar la tabla. Verifica tu conexión e intenta de nuevo.</div>
+                    </div>`;
+                podiumEl.innerHTML = '';
+            }
+        }
+
+        // ============================================================
+        // RENDER PODIUM
+        // ============================================================
+        function renderPodium(top3) {
+            const el = document.getElementById('podium');
+
+            if (top3.length === 0) {
+                el.innerHTML = `<div class="state-container" style="padding:30px">
+                    <span class="state-icon">👁️</span>
+                    <div class="state-title">Nadie se ha atrevido aún</div>
+                    <div class="state-text">Sé el primero en inscribir tu nombre entre los condenados.</div>
+                </div>`;
+                return;
+            }
+
+            const order  = [1, 0, 2]; // visual order: 2nd, 1st, 3rd
+            const classes = ['second', 'first', 'third'];
+            const crowns  = ['🥈', '👑', '🥉'];
+            const mins    = [40, 60, 20]; // podium base heights
+
+            el.innerHTML = order.map(i => {
+                const entry = top3[i];
+                if (!entry) return `<div class="podium-slot ${classes[order.indexOf(i)]}">
+                    <div class="podium-card"><div class="podium-empty">—</div></div>
+                    <div class="podium-base"></div>
+                </div>`;
+
+                const cls   = classes[order.indexOf(i)];
+                const crown = crowns[order.indexOf(i)];
+                const name  = entry.player?.first_name || entry.player?.username || `Alma #${entry.user_id}`;
+                const initial = name.charAt(0).toUpperCase();
+                const pos   = i + 1;
+                const gameLabel = GAME_LABELS[entry.game_type] || entry.game_type;
+                const isMe  = currentUserId && entry.player?.id === currentUserId;
+
+                return `
+                <div class="podium-slot ${cls}">
+                    <div class="podium-card">
+                        <div class="podium-crown">${crown}</div>
+                        <div class="podium-avatar">${initial}</div>
+                        <div class="podium-position">#${pos} ${cls === 'first' ? '— Señor de la Oscuridad' : ''}</div>
+                        <div class="podium-name">${name}${isMe ? ' (Tú)' : ''}</div>
+                        <div class="podium-game-badge">${gameLabel}</div>
+                        <div class="podium-points">${entry.points.toLocaleString('es-ES')} 👁️</div>
+                        <div class="podium-rank-badge">${entry.player?.rank || 'Mortal'}</div>
+                    </div>
+                    <div class="podium-base"></div>
+                </div>`;
+            }).join('');
+        }
+
+        // ============================================================
+        // RENDER LIST (pos 4 onwards)
+        // ============================================================
+        function renderList(entries) {
+            const el = document.getElementById('rankingList');
+
+            if (entries.length === 0) {
+                el.innerHTML = `
+                    <div class="state-container">
+                        <span class="state-icon">🕯️</span>
+                        <div class="state-title">Nadie ha jugado aún</div>
+                        <div class="state-text">Completa un minijuego para aparecer aquí.</div>
+                    </div>`;
+                return;
+            }
+
+            const rest = entries.slice(3);
+            if (rest.length === 0) {
+                el.innerHTML = `<div class="state-container" style="padding:20px">
+                    <span style="font-size:24px">🌑</span><br>
+                    <span style="font-size:13px;color:var(--text-muted)">Solo hay 3 mortales en el registro.</span>
+                </div>`;
+                return;
+            }
+
+            el.innerHTML = rest.map((entry, idx) => {
+                const pos      = idx + 4;
+                const name     = entry.player?.first_name || entry.player?.username || `Alma #${entry.user_id}`;
+                const initial  = name.charAt(0).toUpperCase();
+                const gameLabel = GAME_LABELS[entry.game_type] || entry.game_type;
+                const souls    = entry.player?.soul_balance ?? '—';
+                const rank     = entry.player?.rank || 'Mortal';
+                const isMe     = currentUserId && entry.player?.id === currentUserId;
+                const isTop3   = pos <= 3;
+
+                return `
+                <div class="ranking-row ${isMe ? 'is-me' : ''}">
+                    <div class="rank-num ${isTop3 ? 'top3' : ''}">#${pos}</div>
+                    <div class="rank-info">
+                        <div class="rank-avatar">${initial}</div>
+                        <div class="rank-text">
+                            <div class="rank-username">${name}${isMe ? ' 👈 Tú' : ''}</div>
+                            <div class="rank-meta">
+                                <span class="rank-game-tag">${gameLabel}</span>
+                                <span>${rank}</span>
+                                <span>👻 ${Number(souls).toLocaleString('es-ES')} almas</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rank-points-col">
+                        <div class="rank-points">${entry.points.toLocaleString('es-ES')}</div>
+                        <div class="rank-souls">puntos</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ============================================================
+        // MY RANK CARD
+        // ============================================================
+        function showMyRankCard(user) {
+            const card = document.getElementById('myRankCard');
+            if (!card) return;
+            document.getElementById('myRankAvatar').textContent = (user.first_name || user.username || '?').charAt(0).toUpperCase();
+            document.getElementById('myRankName').textContent   = user.first_name || user.username;
+            document.getElementById('myRankSub').textContent    = `${user.rank} · 👻 ${(user.soul_balance || 0).toLocaleString('es-ES')} almas`;
+            card.classList.remove('hidden');
+        }
+
+        function updateMyRankPosition(entries) {
+            if (!currentUserId) return;
+            const idx = entries.findIndex(e => e.player?.id === currentUserId);
+            const posEl = document.getElementById('myRankPos');
+            if (posEl) posEl.textContent = idx >= 0 ? `#${idx + 1}` : '—';
+        }
+
+        // ============================================================
+        // PARTICLES
+        // ============================================================
+        function spawnParticles() {
+            for (let i = 0; i < 18; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left     = Math.random() * 100 + 'vw';
+                p.style.animationDuration  = (8 + Math.random() * 14) + 's';
+                p.style.animationDelay     = (Math.random() * 10) + 's';
+                p.style.width  = (1 + Math.random() * 3) + 'px';
+                p.style.height = p.style.width;
+                document.body.appendChild(p);
+            }
+        }
+    </script>
+</body>
+
+</html>
