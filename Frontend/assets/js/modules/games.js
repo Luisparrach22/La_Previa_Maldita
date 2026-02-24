@@ -105,8 +105,10 @@ function stopWhackGame() {
 
     const startOverlay = getEl('whackStartOverlay');
     const gameOverOverlay = getEl('whackGameOver');
+    const gameArea = getEl('whackGameArea');
     if (startOverlay) startOverlay.classList.remove('hidden');
     if (gameOverOverlay) gameOverOverlay.classList.add('hidden');
+    if (gameArea) gameArea.classList.add('hidden');
 }
 
 export function initWhackGame() {
@@ -126,8 +128,10 @@ export function initWhackGame() {
     updateWhackUI();
     const startOverlay = getEl('whackStartOverlay');
     const gameOverOverlay = getEl('whackGameOver');
+    const gameArea = getEl('whackGameArea');
     if (startOverlay) startOverlay.classList.add('hidden');
     if (gameOverOverlay) gameOverOverlay.classList.add('hidden');
+    if (gameArea) gameArea.classList.remove('hidden');
 
     const bestScore = localStorage.getItem('whackBestScore') || '0';
     const bestScoreDisplay = getEl('bestScoreDisplay');
@@ -301,7 +305,9 @@ function endWhackGame() {
     if(maxComboEl) maxComboEl.textContent = `x${Math.min(Math.floor(whackState.maxCombo / 5) + 1, 5)}`;
     
     const goOverlay = getEl('whackGameOver');
+    const gameArea = getEl('whackGameArea');
     if(goOverlay) goOverlay.classList.remove('hidden');
+    if(gameArea) gameArea.classList.add('hidden');
 
     // Guardar en servidor
     if (whackState.score > 0) {

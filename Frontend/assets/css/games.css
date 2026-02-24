@@ -245,16 +245,16 @@
 /* ==================== WHACK-A-GHOST PREMIUM ==================== */
 
 #game-whack {
-    padding: 30px;
+    padding: 20px;
     background: radial-gradient(circle at center, #1a0510 0%, #050505 100%);
     color: #fff;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
-    min-height: 800px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 500px;
 }
 
 /* Efecto de sangre en las esquinas */
@@ -272,12 +272,12 @@
 
 .whack-title {
     font-family: 'Creepster', cursive;
-    font-size: 4rem;
+    font-size: 2.2rem;
     color: #ff0000;
     text-align: center;
-    margin: 20px 0 10px;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 4px 4px 0 #000;
-    letter-spacing: 6px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.6), 2px 2px 0 #000;
+    letter-spacing: 3px;
     z-index: 1;
 }
 
@@ -285,8 +285,8 @@
     text-align: center;
     color: #888;
     font-style: italic;
-    margin-bottom: 40px;
-    font-size: 1.2rem;
+    margin-bottom: 20px;
+    font-size: 1rem;
     z-index: 1;
 }
 
@@ -294,16 +294,16 @@
 .whack-hud {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 10px;
     width: 100%;
-    max-width: 800px;
-    margin-bottom: 30px;
-    padding: 20px;
+    max-width: 500px;
+    margin-bottom: 20px;
+    padding: 10px;
     background: rgba(40, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(139, 0, 0, 0.4);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(139, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(139, 0, 0, 0.1);
     z-index: 1;
 }
 
@@ -335,9 +335,9 @@
 .whack-hud-value {
     display: block;
     font-family: 'Nosifer', cursive;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     color: #ff3333;
-    text-shadow: 0 0 15px rgba(255, 51, 51, 0.4);
+    text-shadow: 0 0 10px rgba(255, 51, 51, 0.4);
 }
 
 .whack-combo-val { color: #ffa500; text-shadow: 0 0 15px rgba(255, 165, 0, 0.4); }
@@ -347,9 +347,9 @@
 /* Timer Progress Bar */
 .whack-timer-track {
     width: 100%;
-    max-width: 800px;
-    margin-bottom: 40px;
-    height: 12px;
+    max-width: 500px;
+    margin-bottom: 20px;
+    height: 10px;
     background: #0a0a0a;
     border: 1px solid #330000;
     border-radius: 6px;
@@ -370,14 +370,14 @@
 .whack-board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 15px;
     width: 100%;
-    max-width: 700px;
-    padding: 40px;
+    max-width: 450px;
+    padding: 15px;
     background: rgba(13, 13, 13, 0.9);
     border: 3px solid #1a0000;
-    border-radius: 25px;
-    box-shadow: inset 0 0 80px #000, 0 20px 50px rgba(0,0,0,0.9);
+    border-radius: 15px;
+    box-shadow: inset 0 0 40px #000, 0 10px 25px rgba(0,0,0,0.9);
     position: relative;
     z-index: 1;
 }
@@ -406,11 +406,11 @@
     bottom: -110%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 5rem;
+    font-size: 3rem;
     transition: bottom 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     user-select: none;
     pointer-events: none;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
 }
 
 .wh.active .wh-ghost {
@@ -499,12 +499,12 @@
 
 .whack-overlay-box {
     text-align: center;
-    padding: 50px;
-    max-width: 500px;
+    padding: 30px;
+    max-width: 400px;
     background: rgba(20, 0, 0, 0.4);
     border: 3px solid #4b0000;
-    border-radius: 30px;
-    box-shadow: 0 0 100px rgba(0,0,0,0.8), 0 0 40px rgba(75, 0, 0, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(75, 0, 0, 0.3);
     animation: overlay-enter 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -514,10 +514,10 @@
 }
 
 .whack-big-ghost {
-    font-size: 7rem;
-    margin-bottom: 25px;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
     animation: float-anim 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
 }
 
 @keyframes float-anim {
@@ -528,25 +528,25 @@
 .whack-overlay-box h3 {
     font-family: 'Nosifer', cursive;
     color: #ff0000;
-    font-size: 2.2rem;
-    margin-bottom: 25px;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
     line-height: 1.4;
 }
 
 .whack-overlay-box p {
     color: #bbb;
-    margin-bottom: 40px;
-    line-height: 1.8;
-    font-size: 1.2rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    font-size: 1rem;
 }
 
 .whack-result-score {
     font-family: 'Nosifer', cursive;
-    font-size: 6rem;
+    font-size: 4rem;
     color: #00ff41;
-    margin-bottom: 15px;
-    text-shadow: 0 0 40px rgba(0, 255, 65, 0.5);
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
 }
 
 .whack-result-label {
@@ -599,13 +599,13 @@
     .whack-hud { grid-template-columns: repeat(2, 1fr); padding: 15px; gap: 15px; }
     .whack-hud-item::after { display: none; }
     .whack-board { gap: 15px; padding: 20px; }
-    .wh-ghost { font-size: 3.5rem; }
+    .wh-ghost { font-size: 3rem; }
     .whack-hud-value { font-size: 1.4rem; }
 }
 
 @media (max-width: 400px) {
     .whack-board { gap: 10px; padding: 10px; }
-    .wh-ghost { font-size: 2.8rem; }
+    .wh-ghost { font-size: 2.5rem; }
     .whack-overlay-box { padding: 30px; }
     .whack-result-score { font-size: 4rem; }
 }

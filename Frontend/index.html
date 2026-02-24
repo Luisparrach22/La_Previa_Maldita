@@ -232,66 +232,67 @@
                 <h2 class="whack-title">👻 WHACK-A-GHOST 👻</h2>
                 <p class="whack-subtitle">Aplasta a los espectros antes de que escapen al más allá</p>
 
-                <!-- Barra de Stats -->
-                <div class="whack-hud">
-                    <div class="whack-hud-item">
-                        <span class="whack-hud-label">🩸 PUNTOS</span>
-                        <span class="whack-hud-value" id="scoreDisplay">0</span>
+                <div id="whackGameArea" class="hidden">
+                    <!-- Barra de Stats -->
+                    <div class="whack-hud">
+                        <div class="whack-hud-item">
+                            <span class="whack-hud-label">🩸 PUNTOS</span>
+                            <span class="whack-hud-value" id="scoreDisplay">0</span>
+                        </div>
+                        <div class="whack-hud-item">
+                            <span class="whack-hud-label">🔥 COMBO</span>
+                            <span class="whack-hud-value whack-combo-val" id="comboDisplay">x1</span>
+                        </div>
+                        <div class="whack-hud-item">
+                            <span class="whack-hud-label">⏳ TIEMPO</span>
+                            <span class="whack-hud-value whack-time-val" id="timeDisplay">30</span>
+                        </div>
+                        <div class="whack-hud-item">
+                            <span class="whack-hud-label">🏆 MEJOR</span>
+                            <span class="whack-hud-value whack-best-val" id="bestScoreDisplay">0</span>
+                        </div>
                     </div>
-                    <div class="whack-hud-item">
-                        <span class="whack-hud-label">🔥 COMBO</span>
-                        <span class="whack-hud-value whack-combo-val" id="comboDisplay">x1</span>
+
+                    <!-- Barra de Tiempo Visual -->
+                    <div class="whack-timer-track">
+                        <div class="whack-timer-bar" id="timerFill"></div>
                     </div>
-                    <div class="whack-hud-item">
-                        <span class="whack-hud-label">⏳ TIEMPO</span>
-                        <span class="whack-hud-value whack-time-val" id="timeDisplay">30</span>
-                    </div>
-                    <div class="whack-hud-item">
-                        <span class="whack-hud-label">🏆 MEJOR</span>
-                        <span class="whack-hud-value whack-best-val" id="bestScoreDisplay">0</span>
+
+                    <!-- Tablero de Juego 3x3 -->
+                    <div class="whack-board" id="whackBoard">
+                        <div class="wh" data-hole="0"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="1"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="2"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="3"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="4"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="5"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="6"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="7"><span class="wh-ghost">👻</span></div>
+                        <div class="wh" data-hole="8"><span class="wh-ghost">👻</span></div>
                     </div>
                 </div>
 
-                <!-- Barra de Tiempo Visual -->
-                <div class="whack-timer-track">
-                    <div class="whack-timer-bar" id="timerFill"></div>
-                </div>
-
-                <!-- Tablero de Juego 3x3 -->
-                <div class="whack-board" id="whackBoard">
-                    <div class="wh" data-hole="0"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="1"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="2"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="3"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="4"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="5"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="6"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="7"><span class="wh-ghost">👻</span></div>
-                    <div class="wh" data-hole="8"><span class="wh-ghost">👻</span></div>
-                </div>
-
-                <!-- Overlay: Inicio -->
-                <div class="whack-overlay" id="whackStartOverlay">
-                    <div class="whack-overlay-box">
-                        <div class="whack-big-ghost">👻</div>
-                        <h3>¿LISTO PARA LA CACERÍA?</h3>
-                        <p>Golpea a los fantasmas que aparezcan.<br>Encadena combos para multiplicar puntos.</p>
+                <!-- Pantalla: Inicio -->
+                <div class="whack-inline-screen" id="whackStartOverlay">
+                    <div class="trivia-layout">
+                        <div class="whack-big-ghost" style="font-size: 3rem; margin-bottom: 20px;">👻</div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 15px; text-shadow: none;">¿LISTO PARA LA CACERÍA?</h2>
+                        <p style="color: #bbb; margin-bottom: 25px;">Golpea a los fantasmas que aparezcan.<br>Encadena combos para multiplicar puntos.</p>
                         <button class="btn-start-game" onclick="initWhackGame()">⚡ COMENZAR</button>
                     </div>
                 </div>
 
-                <!-- Overlay: Game Over -->
-                <div class="whack-overlay hidden" id="whackGameOver">
-                    <div class="whack-overlay-box">
-                        <h3>⚰️ CACERÍA TERMINADA</h3>
+                <!-- Pantalla: Game Over -->
+                <div class="whack-inline-screen hidden" id="whackGameOver">
+                    <div class="trivia-layout">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 20px; text-shadow: none;">⚰️ CACERÍA TERMINADA</h2>
                         <div class="whack-result-score" id="finalScoreDisplay">0</div>
                         <p class="whack-result-label">puntos conseguidos</p>
                         <div class="whack-result-row">
                             <div><span>Fantasmas</span><strong id="ghostsCaughtDisplay">0</strong></div>
                             <div><span>Combo Max</span><strong id="maxComboDisplay">x1</strong></div>
                         </div>
-                        <button class="btn-start-game" onclick="initWhackGame()">🔄 JUGAR DE NUEVO</button>
-                        <button class="btn-back-menu whack-btn-back" onclick="showGameMenu()">VOLVER AL MENÚ</button>
+                        <button class="btn-start-game" onclick="initWhackGame()" style="margin-bottom: 10px;">🔄 JUGAR DE NUEVO</button>
                     </div>
                 </div>
             </div>
