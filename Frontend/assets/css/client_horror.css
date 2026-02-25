@@ -719,11 +719,15 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: auto;
-    grid-template-columns: repeat(5, 1fr);
+    height: 65px;
     border-right: none;
-    border-top: 1px solid var(--blood-red);
+    border-top: 1px solid rgba(187, 10, 30, 0.5);
     z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: linear-gradient(0deg, #050000, #0a0000);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.8);
   }
 
   .sidebar-header {
@@ -732,19 +736,58 @@ body {
 
   .dashboard-menu {
     display: flex;
+    flex-direction: row;
+    width: 100%;
     padding: 0;
+    flex: 1;
   }
 
   .dashboard-menu li {
-    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 4px;
     border-left: none;
     border-top: 3px solid transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    min-width: 0;
+  }
+
+  .dashboard-menu li span:first-child {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    width: 100%;
+    height: 28px;
   }
 
   .dashboard-menu li.active {
     border-left: none;
-    border-top-color: var(--bright-blood);
+    border-top: 3px solid var(--bright-blood);
+    background: rgba(187, 10, 30, 0.18);
+  }
+
+  .dashboard-menu li.active::before {
+    display: none;
+  }
+
+  /* Botón de logout en barra inferior — cliente */
+  .dashboard-menu li.logout-item {
+    color: rgba(200, 50, 50, 0.75);
+  }
+
+  .dashboard-menu li.logout-item:hover,
+  .dashboard-menu li.logout-item:active {
+    color: #ff4444;
+    background: rgba(187, 10, 30, 0.2);
+    border-top-color: #ff4444;
   }
 
   .side-text {
@@ -907,7 +950,7 @@ body {
 
 @media (max-width: 600px) {
     .dashboard-content {
-        padding-bottom: 100px; /* Space for fixed bottom sidebar */
+        padding-bottom: 85px; /* Space for fixed bottom nav (65px height + extra margin) */
     }
     
     .shop-grid {

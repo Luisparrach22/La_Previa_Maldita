@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from fastapi.responses import JSONResponse
 import shutil
 import os
@@ -15,7 +15,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 @router.post("/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(request: Request, file: UploadFile = File(...)):
     """
     Subir una imagen al servidor y obtener su URL.
     Soporta: jpeg, png, webp, gif.
@@ -33,9 +33,8 @@ async def upload_image(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Generate URL (Assuming static is mounted at /static)
-        # Note: In production this should be a full URL domain
-        file_url = f"http://localhost:8000/static/uploads/{unique_filename}"
+        base_url = str(request.base_url).rstrip('/')
+        file_url = f"{base_url}/static/uploads/{unique_filename}"
 
         return {"url": file_url, "filename": unique_filename}
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import shutil
@@ -14,6 +14,7 @@ router = APIRouter(
 
 @router.post("/upload/", response_model=dict)
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     current_user: models.User = Depends(dependencies.get_current_admin_user)
 ):
@@ -32,8 +33,8 @@ async def upload_image(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # Return URL relative to server root
-    return {"url": f"http://localhost:8000/static/uploads/{unique_filename}"}
+    base_url = str(request.base_url).rstrip('/')
+    return {"url": f"{base_url}/static/uploads/{unique_filename}"}
 
 # ============================================================================
 # PUBLIC ENDPOINTS

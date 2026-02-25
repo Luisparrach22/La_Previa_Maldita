@@ -1,7 +1,13 @@
-// ==========================================
-// CONFIGURACIÓN
-// ==========================================
-const API_URL = "http://localhost:8000";
+// CONFIGURACIÓN DINÁMICA DE API
+const PROD_API_URL = "http://72.62.170.24:8000";
+const IS_LOCAL = window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' || 
+                 window.location.hostname.startsWith('192.168.') || 
+                 window.location.hostname.startsWith('10.') || 
+                 window.location.hostname.startsWith('172.');
+
+const API_URL = IS_LOCAL ? `http://${window.location.hostname}:8000` : PROD_API_URL;
+
 
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
@@ -20,8 +26,7 @@ async function checkSession() {
     }
 
     try {
-        // Añadimos timestamp para evitar caché del navegador
-        const res = await fetch(`${API_URL}/users/me?t=${new Date().getTime()}`, {
+        const res = await fetch(`${API_URL}/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -366,7 +371,7 @@ async function loadDashboardData(token) {
 
     // Cargar mejor puntuación DESDE EL BACKEND
     try {
-        const resBest = await fetch(`${API_URL}/games/my-best?t=${new Date().getTime()}`, {
+        const resBest = await fetch(`${API_URL}/games/my-best`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (resBest.ok) {
