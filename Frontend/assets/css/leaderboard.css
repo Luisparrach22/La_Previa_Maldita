@@ -1,0 +1,510 @@
+/* ============================================================
+   LEADERBOARD — La Previa Maldita
+   Extraído de leaderboard.html para mantener el código limpio
+============================================================ */
+
+/* ============================================================
+   VARIABLES & RESET
+============================================================ */
+:root {
+    --bg-deep:      #060608;
+    --bg-card:      #0e0e14;
+    --bg-card2:     #13131c;
+    --border:       rgba(255,255,255,0.07);
+    --red:          #c0392b;
+    --red-glow:     rgba(192, 57, 43, 0.35);
+    --gold:         #f5c842;
+    --gold-glow:    rgba(245, 200, 66, 0.3);
+    --silver:       #b0b8c8;
+    --bronze:       #cd7f32;
+    --text:         #e5e5e5;
+    --text-muted:   #7a7a92;
+    --primary:      #6c1aff;
+    --primary-glow: rgba(108, 26, 255, 0.3);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ============================================================
+   ANIMATED BACKGROUND
+============================================================ */
+.bg-static {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 40% at 10% 20%, rgba(108,26,255,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(192,57,43,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: rgba(192, 57, 43, 0.6);
+    pointer-events: none;
+    animation: float-up linear infinite;
+    z-index: 0;
+}
+
+@keyframes float-up {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+.page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* ============================================================
+   BACK BUTTON
+============================================================ */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 32px;
+    transition: color 0.2s;
+}
+.back-btn:hover { color: var(--text); }
+
+/* ============================================================
+   HEADER
+============================================================ */
+.lb-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.lb-header .skull-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 12px;
+    animation: pulse-icon 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px var(--red-glow));
+}
+
+@keyframes pulse-icon {
+    0%, 100% { transform: scale(1) rotate(-3deg); }
+    50%       { transform: scale(1.08) rotate(3deg); }
+}
+
+.lb-title {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(32px, 6vw, 52px);
+    letter-spacing: 3px;
+    color: var(--text);
+    text-shadow: 0 0 30px var(--red-glow), 0 0 60px rgba(192,57,43,0.15);
+    line-height: 1.1;
+}
+
+.lb-subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-top: 10px;
+}
+
+.lb-subtitle span {
+    color: var(--red);
+}
+
+/* ============================================================
+   FILTER TABS
+============================================================ */
+.filter-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.filter-tab:hover {
+    border-color: rgba(108, 26, 255, 0.4);
+    color: var(--text);
+}
+
+.filter-tab.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+/* ============================================================
+   PODIUM TOP 3
+============================================================ */
+.podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding: 0 10px;
+}
+
+.podium-slot {
+    flex: 1;
+    max-width: 220px;
+    text-align: center;
+    position: relative;
+}
+
+.podium-slot.first  { order: 2; }
+.podium-slot.second { order: 1; }
+.podium-slot.third  { order: 3; }
+
+.podium-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 12px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.podium-slot.first .podium-card {
+    border-color: rgba(245, 200, 66, 0.35);
+    box-shadow: 0 0 40px rgba(245,200,66,0.12), inset 0 1px 0 rgba(245,200,66,0.2);
+    padding-top: 28px;
+}
+
+.podium-slot.second .podium-card { border-color: rgba(176, 184, 200, 0.3); }
+.podium-slot.third  .podium-card { border-color: rgba(205, 127, 50, 0.3); }
+
+.podium-crown {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    filter: drop-shadow(0 0 8px var(--gold-glow));
+}
+
+.podium-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.podium-slot.first  .podium-avatar { background: linear-gradient(135deg, #f5c842, #e67e22); font-size: 24px; width: 64px; height: 64px; }
+.podium-slot.second .podium-avatar { background: linear-gradient(135deg, #8e9ab0, #525f7a); }
+.podium-slot.third  .podium-avatar { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+
+.podium-position {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.podium-slot.first  .podium-position { color: var(--gold); }
+.podium-slot.second .podium-position { color: var(--silver); }
+.podium-slot.third  .podium-position { color: var(--bronze); }
+
+.podium-name {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.podium-game-badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.podium-points {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.podium-slot.first  .podium-points { color: var(--gold); }
+.podium-slot.second .podium-points { color: var(--silver); }
+.podium-slot.third  .podium-points { color: var(--bronze); }
+
+.podium-rank-badge {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.podium-base { height: 0; border-radius: 0 0 8px 8px; }
+
+.podium-slot.first  .podium-base { height: 60px; background: linear-gradient(180deg, rgba(245,200,66,0.15), rgba(245,200,66,0.04)); border: 1px solid rgba(245,200,66,0.2); border-top: none; }
+.podium-slot.second .podium-base { height: 40px; background: linear-gradient(180deg, rgba(176,184,200,0.1), transparent); border: 1px solid rgba(176,184,200,0.15); border-top: none; }
+.podium-slot.third  .podium-base { height: 20px; background: linear-gradient(180deg, rgba(205,127,50,0.1), transparent); border: 1px solid rgba(205,127,50,0.15); border-top: none; }
+
+.podium-empty {
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 30px 8px;
+}
+
+/* ============================================================
+   FULL RANKING LIST
+============================================================ */
+.ranking-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-left: 4px;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ranking-row {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.ranking-row:hover {
+    background: var(--bg-card2);
+    border-color: rgba(108,26,255,0.2);
+    transform: translateX(4px);
+}
+
+.ranking-row.is-me {
+    border-color: rgba(108,26,255,0.4);
+    background: rgba(108,26,255,0.06);
+}
+
+.rank-num {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.rank-num.top3 { color: var(--text); }
+
+.rank-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.rank-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.rank-text { min-width: 0; }
+
+.rank-username {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rank-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.rank-game-tag {
+    background: rgba(108,26,255,0.15);
+    color: #a78bfa;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.rank-points-col { text-align: right; }
+
+.rank-points {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--red);
+}
+
+.rank-souls {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ============================================================
+   STATES: LOADING / EMPTY / ERROR
+============================================================ */
+.state-container {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.state-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.state-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.state-text { font-size: 14px; }
+
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card2) 50%, var(--bg-card) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 12px;
+    height: 68px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+}
+
+/* ============================================================
+   USER HIGHLIGHT CARD
+============================================================ */
+.my-rank-card {
+    background: linear-gradient(135deg, rgba(108,26,255,0.12), rgba(192,57,43,0.08));
+    border: 1px solid rgba(108,26,255,0.35);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.my-rank-card.hidden { display: none; }
+
+.my-rank-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-rank-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.my-rank-info .my-rank-name {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.my-rank-info .my-rank-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.my-rank-right { text-align: right; }
+
+.my-rank-pos {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.my-rank-pos-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 600px) {
+    .podium { gap: 6px; }
+    .podium-slot.first .podium-avatar { width: 52px; height: 52px; font-size: 20px; }
+    .podium-avatar { width: 44px; height: 44px; font-size: 18px; }
+    .podium-name { font-size: 12px; }
+    .ranking-row { padding: 12px 14px; gap: 10px; }
+    .rank-avatar { width: 34px; height: 34px; font-size: 14px; }
+    .rank-username { font-size: 14px; }
+    .rank-points { font-size: 16px; }
+}
