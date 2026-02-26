@@ -390,35 +390,54 @@ function checkTriviaAnswer(selected, correct, btn) {
 }
 
 // ==========================================
-// JUEGO 3: MEMORY
+// JUEGO 3: MEMORY (Premium Version)
 // ==========================================
 
 const memoryEmojis = ['💀', '🩸', '🕷️', '🦇', '⚰️', '🔪', '🎃', '🧟'];
 let memoryState = {
     cards: [],
     flipped: [],
-    locked: false
+    locked: false,
+    moves: 0,
+    matchedPairs: 0,
+    seconds: 0,
+    isPaused: false,
+    isActive: false,
+    interval: null,
+    peekTimeout: null
 };
 
 export function initMemoryGame() {
-    console.log("Iniciando Memoria");
-    enforceGameVisibility('game-memory'); 
+    console.log("Iniciando Memoria Premium...");
+    
+    // Si estamos en la landing, nos aseguramos de que el contenedor sea visible
+    const gameWhack = getEl('game-whack');
+    if (gameWhack) { // Detectar si estamos en index.html por otro id de juego
+        enforceGameVisibility('game-memory'); 
+    }
 
+    resetMemoryGameState();
+    
     const grid = getEl('memory-grid');
     if (!grid) return;
 
     grid.innerHTML = '';
-    memoryState.flipped = [];
-    memoryState.cards = [];
-    memoryState.locked = false;
+    memoryState.isActive = true;
+    memoryState.locked = true; // Bloquear clics durante la vista previa
     
-    // Crear baraja duplicada y mezclar
+    // UI Initial State
+    updateMemoryUI();
+    
+    // Control de botones en Dashboard (si existen)
+    updateMemoryButtons('start');
+
+    // Baraja
     const deck = [...memoryEmojis, ...memoryEmojis]; 
     deck.sort(() => 0.5 - Math.random());
     
     deck.forEach((emoji, index) => {
         const card = document.createElement('div');
-        card.className = 'memory-card';
+        card.className = 'memory-card flipped'; // Empezar volteadas para el peek
         card.dataset.value = emoji;
         card.dataset.id = index;
         
@@ -427,45 +446,143 @@ export function initMemoryGame() {
             <div class="back">${emoji}</div>
         `;
         
-        card.addEventListener('click', () => flipCard(card));
+        card.onclick = () => flipMemoryCard(card);
         grid.appendChild(card);
         memoryState.cards.push(card);
     });
+
+    console.log('👀 Vista previa de 3 segundos...');
+    memoryState.peekTimeout = setTimeout(() => {
+        if (!memoryState.isActive) return;
+        
+        memoryState.cards.forEach(card => card.classList.remove('flipped'));
+        memoryState.locked = false;
+        startMemoryTimer();
+        console.log('🙈 ¡A jugar!');
+    }, 3000);
 }
 
-function flipCard(card) {
-    if (memoryState.locked) return;
-    if (card.classList.contains('flipped')) return; // No voltear si ya está volteada
+function resetMemoryGameState() {
+    stopMemoryGame();
+    memoryState = {
+        cards: [],
+        flipped: [],
+        locked: false,
+        moves: 0,
+        matchedPairs: 0,
+        seconds: 0,
+        isPaused: false,
+        isActive: false,
+        interval: null,
+        peekTimeout: null
+    };
+}
+
+function stopMemoryGame() {
+    memoryState.isActive = false;
+    if (memoryState.interval) clearInterval(memoryState.interval);
+    if (memoryState.peekTimeout) clearTimeout(memoryState.peekTimeout);
+}
+
+function startMemoryTimer() {
+    if (memoryState.interval) clearInterval(memoryState.interval);
+    memoryState.interval = setInterval(() => {
+        if (!memoryState.isPaused && memoryState.isActive) {
+            memoryState.seconds++;
+            const timeDisplay = getEl('memory-time');
+            if (timeDisplay) {
+                const min = Math.floor(memoryState.seconds / 60).toString().padStart(2, '0');
+                const sec = (memoryState.seconds % 60).toString().padStart(2, '0');
+                timeDisplay.textContent = `${min}:${sec}`;
+            }
+        }
+    }, 1000);
+}
+
+export function togglePauseMemory() {
+    if (!memoryState.isActive) return;
+
+    memoryState.isPaused = !memoryState.isPaused;
+    const overlay = getEl('memory-paused-overlay');
+    const btn = getEl('btn-pause-memory');
+    
+    if (memoryState.isPaused) {
+        if (overlay) overlay.style.display = 'flex';
+        if (btn) btn.textContent = "Continuar";
+        memoryState.locked = true;
+    } else {
+        if (overlay) overlay.style.display = 'none';
+        if (btn) btn.textContent = "Pausar";
+        memoryState.locked = false;
+    }
+}
+
+function updateMemoryUI() {
+    const movesDisplay = getEl('memory-moves');
+    const timeDisplay = getEl('memory-time');
+    if (movesDisplay) movesDisplay.textContent = memoryState.moves;
+    if (timeDisplay) timeDisplay.textContent = '00:00';
+}
+
+function updateMemoryButtons(state) {
+    const btnStart = getEl('btn-start-memory');
+    const btnRestart = getEl('btn-restart-memory');
+    const btnPause = getEl('btn-pause-memory');
+
+    if (!btnStart) return; // No estamos en el Dashboard
+
+    if (state === 'start') {
+        btnStart.style.display = 'none';
+        btnRestart.style.display = 'inline-block';
+        btnPause.style.display = 'inline-block';
+        btnPause.textContent = "Pausar";
+    }
+}
+
+function flipMemoryCard(card) {
+    if (memoryState.locked || memoryState.isPaused || !memoryState.isActive) return;
+    if (card === memoryState.flipped[0]) return;
+    if (card.classList.contains('flipped')) return;
     
     card.classList.add('flipped');
     memoryState.flipped.push(card);
 
     if (memoryState.flipped.length === 2) {
-        memoryState.locked = true; // Bloquear input
+        memoryState.moves++;
+        const movesDisplay = getEl('memory-moves');
+        if (movesDisplay) movesDisplay.textContent = memoryState.moves;
+        
         checkMemoryMatch();
     }
 }
 
 function checkMemoryMatch() {
+    memoryState.locked = true;
     const [card1, card2] = memoryState.flipped;
     const match = card1.dataset.value === card2.dataset.value;
 
     if (match) {
-        // Coincidencia
+        memoryState.matchedPairs++;
         memoryState.flipped = [];
         memoryState.locked = false;
         
-        // Verificar victoria
-        const allFlipped = document.querySelectorAll('.memory-card.flipped').length === memoryState.cards.length;
-        if (allFlipped) {
+        if (memoryState.matchedPairs === memoryEmojis.length) {
+            stopMemoryGame();
             setTimeout(() => {
-                alert("¡MEMORIA PERFECTA! +100 Almas");
-                saveGameScore('memory', 100);
-                showGameMenu(); // Volver al menú al ganar
+                const bonusTime = Math.max(0, 300 - memoryState.seconds);
+                const bonusMoves = Math.max(0, 25 - memoryState.moves);
+                const totalScore = 50 + bonusTime + bonusMoves;
+                
+                alert(`¡MEMORIA PERFECTA!\nAlmas recolectadas: ${totalScore}\nTiempo: ${getEl('memory-time')?.textContent || 'N/A'}`);
+                saveGameScore('memory', totalScore);
+                
+                // Si hay un hub del juego (landing), volver tras un momento
+                if (getEl('gameSelector')) {
+                    showGameMenu();
+                }
             }, 500);
         }
     } else {
-        // No coincidencia
         setTimeout(() => {
             if (card1) card1.classList.remove('flipped');
             if (card2) card2.classList.remove('flipped');
@@ -481,15 +598,22 @@ function checkMemoryMatch() {
 
 async function saveGameScore(gameType, score) {
     const currentUser = getCurrentUser();
-    if (!currentUser) return; 
+    // No bloqueamos si no hay usuario, solo no enviamos al server
+    // Así el juego sigue siendo funcional para invitados en la landing
     
-    // Actualización optimista del UI
-    const newBalance = (currentUser.soul_balance || 0) + score;
-    updateSoulBalance(newBalance);
+    if (currentUser) {
+        // Actualización optimista del UI
+        const newBalance = (currentUser.soul_balance || 0) + score;
+        updateSoulBalance(newBalance);
+        
+        // Sincronizar con Dashboard si estamos allí
+        const dashSoulAmount = document.getElementById('soulBalanceAmount');
+        if (dashSoulAmount) dashSoulAmount.textContent = newBalance;
+    }
 
     try {
         const token = localStorage.getItem('token');
-        if (!token) throw new Error("No token");
+        if (!token) return;
 
         const response = await fetch(`${API_URL}/games/score`, {
             method: 'POST',
@@ -499,17 +623,18 @@ async function saveGameScore(gameType, score) {
             },
             body: JSON.stringify({
                 game_type: gameType,
-                score_value: score
+                score_value: score,
+                points: score // Soportar ambos formatos por si acaso
             })
         });
 
-        if (!response.ok) {
-            throw new Error("Error saving score");
+        if (response.ok) {
+            console.log(`✅ Puntuación de ${gameType} guardada: ${score}`);
+            // Recargar datos si es necesario (solo si hay una función global checkSession)
+            if (typeof window.checkSession === 'function') window.checkSession();
         }
     } catch (err) {
         console.error("Error guardando puntuación:", err);
-        // Opcional: Revertir balance si falla la API
-        // updateSoulBalance(currentUser.soul_balance); 
     }
 }
 
