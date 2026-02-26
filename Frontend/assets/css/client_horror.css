@@ -25,7 +25,8 @@ body {
   color: var(--ghost-white);
   overflow-x: hidden;
   /* Fondo con textura terrorífica */
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       circle at 15% 50%,
       rgba(80, 0, 0, 0.15) 0%,
       transparent 25%
@@ -112,18 +113,22 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(187, 10, 30, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  box-shadow:
+    0 0 20px rgba(187, 10, 30, 0.5),
+    inset 0 0 20px rgba(0, 0, 0, 0.8);
   animation: pulse 3s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(187, 10, 30, 0.5),
+    box-shadow:
+      0 0 20px rgba(187, 10, 30, 0.5),
       inset 0 0 20px rgba(0, 0, 0, 0.8);
   }
   50% {
-    box-shadow: 0 0 30px rgba(187, 10, 30, 0.8),
+    box-shadow:
+      0 0 30px rgba(187, 10, 30, 0.8),
       inset 0 0 20px rgba(0, 0, 0, 0.8);
   }
 }
@@ -177,6 +182,10 @@ body {
   border-left-color: var(--bright-blood);
   font-weight: 700;
   box-shadow: inset 0 0 20px rgba(187, 10, 30, 0.2);
+}
+
+.logout-item {
+  display: none !important; /* Hide on desktop */
 }
 
 .dashboard-menu li.active::before {
@@ -291,7 +300,9 @@ body {
   color: var(--bright-blood);
   font-size: 3.5rem;
   margin-bottom: 5px;
-  text-shadow: 3px 3px 0 #000, 0 0 20px rgba(187, 10, 30, 0.6);
+  text-shadow:
+    3px 3px 0 #000,
+    0 0 20px rgba(187, 10, 30, 0.6);
   letter-spacing: 2px;
 }
 
@@ -337,7 +348,9 @@ body {
 .ticket-card-pro:hover {
   transform: translateY(-10px) scale(1.02);
   border-color: var(--bright-blood);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(187, 10, 30, 0.3);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(187, 10, 30, 0.3);
 }
 
 .ticket-content {
@@ -601,7 +614,9 @@ body {
   max-width: 600px;
   width: 90%;
   position: relative;
-  box-shadow: 0 0 50px rgba(187, 10, 30, 0.5), inset 0 0 50px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 50px rgba(187, 10, 30, 0.5),
+    inset 0 0 50px rgba(0, 0, 0, 0.5);
   animation: modalZoom 0.3s ease;
 }
 
@@ -641,7 +656,9 @@ body {
   color: var(--bright-blood);
   font-size: 2.5rem;
   margin-bottom: 30px;
-  text-shadow: 3px 3px 0 #000, 0 0 20px rgba(187, 10, 30, 0.8);
+  text-shadow:
+    3px 3px 0 #000,
+    0 0 20px rgba(187, 10, 30, 0.8);
 }
 
 .qr-big {
@@ -780,6 +797,7 @@ body {
 
   /* Botón de logout en barra inferior — cliente */
   .dashboard-menu li.logout-item {
+    display: flex !important; /* Show only on mobile */
     color: rgba(200, 50, 50, 0.75);
   }
 
@@ -853,196 +871,203 @@ body {
 
 /* ==================== SHOP PRODUCT CARDS ==================== */
 .product-card {
-    background: #0a0a0a;
-    border-radius: 15px;
-    overflow: hidden;
-    transition: 0.3s;
-    border: 1px solid #222;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+  background: #0a0a0a;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: 0.3s;
+  border: 1px solid #222;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--blood-red);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(-5px);
+  border-color: var(--blood-red);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .product-image-container {
-    height: 200px;
-    background: #151515;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
+  height: 200px;
+  background: #151515;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .product-image {
-    max-width: 100%;
-    max-height: 100%;
-    transition: 0.5s;
-    object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  transition: 0.5s;
+  object-fit: cover;
 }
 
 .product-card:hover .product-image {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .product-info {
-    padding: 20px;
-    text-align: left;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  padding: 20px;
+  text-align: left;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-info h3 {
-    font-size: 1.4rem;
-    margin-bottom: 5px;
-    color: #fff;
-    font-family: "Nosifer", cursive;
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+  color: #fff;
+  font-family: "Nosifer", cursive;
 }
 
 .product-info .product-price {
-    color: var(--blood-red);
-    font-weight: bold;
-    font-size: 1.5rem;
-    font-family: "Creepster", cursive;
-    margin-top: 10px;
+  color: var(--blood-red);
+  font-weight: bold;
+  font-size: 1.5rem;
+  font-family: "Creepster", cursive;
+  margin-top: 10px;
 }
 
 .add-to-cart-btn {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
-    border: none;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: 0.2s;
-    border-radius: 8px;
-    text-transform: uppercase;
-    font-family: "Outfit", sans-serif;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: 0.2s;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-family: "Outfit", sans-serif;
 }
 
 .add-to-cart-btn:hover {
-    box-shadow: 0 0 15px var(--blood-red);
-    transform: scale(1.02);
+  box-shadow: 0 0 15px var(--blood-red);
+  transform: scale(1.02);
 }
 
 /* ==================== SHOP GRID ==================== */
 .shop-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 25px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
-    .shop-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Smaller cards for mobile */
-        gap: 15px;
-    }
+  .shop-grid {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(160px, 1fr)
+    ); /* Smaller cards for mobile */
+    gap: 15px;
+  }
 }
 
 @media (max-width: 600px) {
-    .dashboard-content {
-        padding-bottom: 85px; /* Space for fixed bottom nav (65px height + extra margin) */
-    }
-    
-    .shop-grid {
-        grid-template-columns: 1fr; /* Full width cards on very small screens */
-    }
+  .dashboard-content {
+    padding-bottom: 85px; /* Space for fixed bottom nav (65px height + extra margin) */
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr; /* Full width cards on very small screens */
+  }
 }
 
 /* ==================== GAMES STYLES ==================== */
 /* Whack-a-Ghost styles moved to games.css */
 
-
 /* Trivia */
 .trivia-option {
-    background: #222;
-    color: white;
-    padding: 15px;
-    border: 1px solid #444;
-    cursor: pointer;
-    transition: 0.3s;
-    text-align: left;
-    border-radius: 8px;
-    font-size: 1.1rem;
+  background: #222;
+  color: white;
+  padding: 15px;
+  border: 1px solid #444;
+  cursor: pointer;
+  transition: 0.3s;
+  text-align: left;
+  border-radius: 8px;
+  font-size: 1.1rem;
 }
 
 .trivia-option:hover {
-    background: #333;
-    border-color: var(--blood-red);
+  background: #333;
+  border-color: var(--blood-red);
 }
 
 .trivia-option.correct {
-    background: rgba(0, 255, 65, 0.2);
-    border-color: var(--spectral-green);
+  background: rgba(0, 255, 65, 0.2);
+  border-color: var(--spectral-green);
 }
 
 .trivia-option.wrong {
-    background: rgba(187, 10, 30, 0.2);
-    border-color: var(--blood-red);
+  background: rgba(187, 10, 30, 0.2);
+  border-color: var(--blood-red);
 }
 
 /* Memory Game Cards */
 .memory-grid-user {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    max-width: 500px;
-    margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 @media (max-width: 500px) {
-    .memory-grid-user {
-        grid-template-columns: repeat(3, 1fr);
-    }
+  .memory-grid-user {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .memory-card {
-    height: 100px; /* Reduced for dashboard */
-    background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
-    border: 2px solid var(--blood-red);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    transition: all 0.3s ease;
-    user-select: none;
-    position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  height: 100px; /* Reduced for dashboard */
+  background: linear-gradient(135deg, var(--dark-blood), var(--blood-red));
+  border: 2px solid var(--blood-red);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  transition: all 0.3s ease;
+  user-select: none;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .memory-card:hover {
-    border-color: var(--bright-blood);
-    box-shadow: 0 0 15px rgba(187, 10, 30, 0.5);
+  border-color: var(--bright-blood);
+  box-shadow: 0 0 15px rgba(187, 10, 30, 0.5);
 }
 
 /* Emoji oculto por defecto */
 .memory-card .front {
-    display: none;
+  display: none;
 }
 
 /* Cuando se voltea la carta, muestra el emoji */
 .memory-card.flipped {
-    background: #222;
-    border-color: var(--spectral-green);
+  background: #222;
+  border-color: var(--spectral-green);
 }
 
 .memory-card.flipped .front {
-    display: block;
-    animation: bounce 0.3s ease;
+  display: block;
+  animation: bounce 0.3s ease;
 }
 
 @keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }

@@ -1,12 +1,38 @@
-// CONFIGURACIÓN DINÁMICA DE API
-const PROD_API_URL = "http://72.62.170.24:8000";
-const IS_LOCAL = window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' || 
-                 window.location.hostname.startsWith('192.168.') || 
-                 window.location.hostname.startsWith('10.') || 
-                 window.location.hostname.startsWith('172.');
+// CONFIGURACIÓN CENTRALIZADA
+import { API_URL } from './modules/config.js';
 
-const API_URL = IS_LOCAL ? `http://${window.location.hostname}:8000` : PROD_API_URL;
+// Expose ALL functions called from HTML onclick/onsubmit/onchange to window
+window.switchSection = switchSection;
+window.logoutAdmin = logoutAdmin;
+window.openUserModal = openUserModal;
+window.closeUserModal = closeUserModal;
+window.saveUser = saveUser;
+window.editUser = editUser;
+window.deleteUser = deleteUser;
+window.filterUsers = filterUsers;
+window.openEntradaModal = openEntradaModal;
+window.closeEntradaModal = closeEntradaModal;
+window.saveEntrada = saveEntrada;
+window.editEntrada = editEntrada;
+window.deleteEntrada = deleteEntrada;
+window.filterEntradas = filterEntradas;
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.saveProduct = saveProduct;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.filterProducts = filterProducts;
+window.filterOrders = filterOrders;
+window.viewOrder = viewOrder;
+window.closeOrderModal = closeOrderModal;
+window.changeOrderStatus = changeOrderStatus;
+window.validateTicket = validateTicket;
+window.markTicketAsUsed = markTicketAsUsed;
+window.startQRScanner = startQRScanner;
+window.stopQRScanner = stopQRScanner;
+window.uploadImage = uploadImage;
+window.removeImage = removeImage;
+window.showNotification = showNotification;
 
 let adminToken = null;
 let currentAdmin = null;

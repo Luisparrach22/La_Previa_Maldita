@@ -5,16 +5,12 @@
  */
 
 // ============================================================
-// CONFIG
+// CONFIG (centralizado en modules/config.js)
 // ============================================================
-const PROD_API_URL = 'http://72.62.170.24:8000';
-const IS_LOCAL = window.location.hostname === 'localhost' ||
-                 window.location.hostname === '127.0.0.1' ||
-                 window.location.hostname.startsWith('192.168.') ||
-                 window.location.hostname.startsWith('10.') ||
-                 window.location.hostname.startsWith('172.');
+import { API_URL } from './modules/config.js';
 
-const API_URL = IS_LOCAL ? `http://${window.location.hostname}:8000` : PROD_API_URL;
+// Expose functions called from HTML onclick
+window.setFilter = setFilter;
 
 const LIMIT = 20;
 
